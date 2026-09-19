@@ -1,0 +1,305 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-19T00:00:00Z",
+  "title": "Design System: Labels in Action",
+  "extensions": {
+    "colorMeta": {
+      "stamp": {
+        "role": "primary",
+        "displayName": "Stamp Red",
+        "canonical": "#b8352c",
+        "tonalRamp": ["#2b0c09", "#4a1511", "#6b1f19", "#8f2721", "#b8352c", "#d1635b", "#e4998f", "#f5d6d1"]
+      },
+      "stamp-deep": {
+        "role": "primary",
+        "displayName": "Stamp Red Deep",
+        "canonical": "#8f2721",
+        "tonalRamp": ["#240907", "#3d100d", "#5c1814", "#77201b", "#8f2721", "#b4564f", "#d69a94", "#f2dcd9"]
+      },
+      "drawer-deep": {
+        "role": "neutral",
+        "displayName": "Drawer Deep",
+        "canonical": "#241d16",
+        "tonalRamp": ["#120e0a", "#1a1510", "#241d16", "#33291f", "#433527", "#6b573d", "#a08a68", "#ded0b8"]
+      },
+      "drawer": {
+        "role": "neutral",
+        "displayName": "Kraft Board",
+        "canonical": "#33291f",
+        "tonalRamp": ["#120e0a", "#1a1510", "#241d16", "#33291f", "#433527", "#54432f", "#8a7962", "#d3c4aa"]
+      },
+      "drawer-raised": {
+        "role": "neutral",
+        "displayName": "Raised Kraft",
+        "canonical": "#433527",
+        "tonalRamp": ["#171209", "#241d16", "#33291f", "#433527", "#54432f", "#6b573d", "#9c8461", "#d8c8ac"]
+      },
+      "drawer-high": {
+        "role": "neutral",
+        "displayName": "Lit Kraft",
+        "canonical": "#54432f",
+        "tonalRamp": ["#1c1610", "#2b2217", "#3c301f", "#54432f", "#6b573d", "#8a7051", "#b39a76", "#e2d3ba"]
+      },
+      "drawer-edge": {
+        "role": "neutral",
+        "displayName": "Brass Edge",
+        "canonical": "#6b573d",
+        "tonalRamp": ["#221b12", "#33291b", "#4a3b28", "#6b573d", "#8a7051", "#a98d68", "#c9b28e", "#ece0c8"]
+      },
+      "card": {
+        "role": "neutral",
+        "displayName": "Card Stock",
+        "canonical": "#f2e9d5",
+        "tonalRamp": ["#39301c", "#54492f", "#766946", "#9c8c66", "#bfae8b", "#dbcdae", "#e6dbc2", "#f2e9d5"]
+      },
+      "card-bright": {
+        "role": "neutral",
+        "displayName": "Bright Stock",
+        "canonical": "#fbf6ea",
+        "tonalRamp": ["#3d3623", "#5a5037", "#7d7150", "#a2956f", "#c4b894", "#ded3b6", "#efe7d3", "#fbf6ea"]
+      },
+      "card-sunk": {
+        "role": "neutral",
+        "displayName": "Sunk Stock",
+        "canonical": "#e6dbc2",
+        "tonalRamp": ["#332b19", "#4d432a", "#6e613f", "#93855d", "#b6a782", "#d0c3a2", "#e6dbc2", "#f4eede"]
+      },
+      "card-rule": {
+        "role": "tertiary",
+        "displayName": "Ruled Blue",
+        "canonical": "#7d9bb5",
+        "tonalRamp": ["#111b24", "#1d2e3d", "#2c4658", "#3e6074", "#547c92", "#7d9bb5", "#a8c1d3", "#dde8f0"]
+      },
+      "control-bg": {
+        "role": "neutral",
+        "displayName": "Typing Stock",
+        "canonical": "#ece2cb",
+        "tonalRamp": ["#352d1c", "#4f452d", "#716343", "#968662", "#b9a684", "#d3c4a8", "#ece2cb", "#f7f2e5"]
+      },
+      "control-border": {
+        "role": "neutral",
+        "displayName": "Stock Rule",
+        "canonical": "#b9a684",
+        "tonalRamp": ["#2b2418", "#433927", "#5f5236", "#7e6d49", "#9c895e", "#b9a684", "#d3c5aa", "#eee6d6"]
+      },
+      "ink-primary": {
+        "role": "neutral",
+        "displayName": "Primary Ink on Kraft",
+        "canonical": "#f0e6d2",
+        "tonalRamp": ["#39321f", "#544a31", "#766a47", "#9b8d66", "#bda882", "#d6c8a9", "#e6dcc3", "#f0e6d2"]
+      },
+      "ink-secondary": {
+        "role": "neutral",
+        "displayName": "Secondary Ink on Kraft",
+        "canonical": "#bda882",
+        "tonalRamp": ["#2c2416", "#443821", "#5f4f2f", "#7e6a41", "#9c8659", "#bda882", "#d5c7ab", "#ece3d3"]
+      },
+      "ink-tertiary": {
+        "role": "neutral",
+        "displayName": "Tertiary Ink on Kraft",
+        "canonical": "#8a7962",
+        "tonalRamp": ["#231d16", "#362d22", "#4c4030", "#655541", "#8a7962", "#a89a85", "#c5bbab", "#e7e1d8"]
+      },
+      "ink-muted": {
+        "role": "neutral",
+        "displayName": "Muted Ink on Kraft",
+        "canonical": "#5c4c39",
+        "tonalRamp": ["#1b1610", "#2b231a", "#3d3226", "#5c4c39", "#7a664e", "#9b8669", "#bfae95", "#e4dbcd"]
+      },
+      "ink-disabled": {
+        "role": "neutral",
+        "displayName": "Unavailable Ink",
+        "canonical": "#a2907a",
+        "tonalRamp": ["#251f18", "#3a3126", "#524537", "#6d5d4a", "#8a7761", "#a2907a", "#c3b5a3", "#e7e0d6"]
+      },
+      "ink-on-card": {
+        "role": "neutral",
+        "displayName": "Ink on Card",
+        "canonical": "#2a241c",
+        "tonalRamp": ["#15120e", "#201b15", "#2a241c", "#3d3527", "#544934", "#6b5f4e", "#9a8e7b", "#d6cec1"]
+      },
+      "ink-on-card-2": {
+        "role": "neutral",
+        "displayName": "Secondary Ink on Card",
+        "canonical": "#6b5f4e",
+        "tonalRamp": ["#1c1814", "#2b251e", "#3d352b", "#54493a", "#6b5f4e", "#8c7f6b", "#b2a695", "#ded7cb"]
+      },
+      "withdrawn": {
+        "role": "secondary",
+        "displayName": "Withdrawn Grey",
+        "canonical": "#9b8a70",
+        "tonalRamp": ["#221d16", "#362f24", "#4c4334", "#665a47", "#82735c", "#9b8a70", "#bdb096", "#e5dfd2"]
+      },
+      "status-ok": {
+        "role": "tertiary",
+        "displayName": "Filed Green",
+        "canonical": "#7d9a55",
+        "tonalRamp": ["#171d0f", "#25301a", "#374726", "#4c6134", "#657f45", "#7d9a55", "#a4bb80", "#dde7c9"]
+      },
+      "status-warn": {
+        "role": "tertiary",
+        "displayName": "Faltering Amber",
+        "canonical": "#c2842c",
+        "tonalRamp": ["#2a1c09", "#422c0e", "#5d3f15", "#7c541d", "#9e6b25", "#c2842c", "#dcae6b", "#f3e1c2"]
+      },
+      "status-danger": {
+        "role": "tertiary",
+        "displayName": "Fault Red",
+        "canonical": "#d4503f",
+        "tonalRamp": ["#2c0e09", "#471710", "#66211a", "#872c23", "#ab3b2f", "#d4503f", "#e5897c", "#f8d8d3"]
+      }
+    },
+    "typographyMeta": {
+      "wordmark": { "displayName": "Wordmark", "purpose": "The LIA mark, set as a typed card-stock plate at the left of the drawer label. Typography, not an image." },
+      "notation": { "displayName": "Notation", "purpose": "Every measured quantity: dimensions, counts, densities, device ids, build stamps. Tabular figures." },
+      "tray-title": { "displayName": "Tray Title", "purpose": "Ruled-off uppercase heading of an open tray." },
+      "commit-label": { "displayName": "Commit Label", "purpose": "The word on the single primary key: Connect, Pairing, Print." },
+      "body": { "displayName": "Body", "purpose": "Default UI speech in the sans face." },
+      "label": { "displayName": "Label", "purpose": "Drawer tab labels and small control text." },
+      "caption": { "displayName": "Caption", "purpose": "Menu field labels and colophon, in the notation face." }
+    },
+    "shadows": [
+      { "name": "lift-card", "value": "0 1px 1px rgba(0,0,0,0.22), 0 6px 14px rgba(0,0,0,0.3)", "purpose": "The index card resting on the board; also dropdowns and modals, which are cards pulled from the drawer." },
+      { "name": "lift-tray", "value": "0 -2px 18px rgba(0,0,0,0.34)", "purpose": "Upward-cast only, so the tray reads as sliding out from under the card." },
+      { "name": "lift-key", "value": "0 1px 0 rgba(255,255,255,0.16) inset, 0 2px 4px rgba(0,0,0,0.32)", "purpose": "The stamp key: inset top highlight plus short drop. A key you can press." },
+      { "name": "press-key", "value": "0 1px 2px rgba(0,0,0,0.3) inset", "purpose": "Active state of the stamp key; the stamp pressed into the stock." },
+      { "name": "board-recess", "value": "inset 0 18px 26px -18px rgba(0,0,0,0.95), inset 0 -18px 26px -18px rgba(0,0,0,0.95)", "purpose": "A dark wall at the drawer lip, falling away from the light. The only inset-on-surface effect in the system." },
+      { "name": "rail-seat", "value": "0 1px 0 rgba(0,0,0,0.35)", "purpose": "Hairline seat under the drawer-label rail where it meets the board." },
+      { "name": "focus-ring-field", "value": "0 0 0 3px rgba(184,53,44,0.55)", "purpose": "Focused input field ring in stamp red." }
+    ],
+    "motion": [
+      { "name": "drawer-pull", "value": "translateY(<panel height>) 220ms cubic-out", "purpose": "The single authored motion. Trays slide out from beneath a card that never moves." },
+      { "name": "ease-drawer", "value": "cubicOut", "purpose": "The only easing in the system." },
+      { "name": "duration-reduced", "value": "0ms", "purpose": "Under prefers-reduced-motion: reduce, the drawer pull resolves instantly." }
+    ],
+    "breakpoints": [
+      { "name": "phone", "value": "375px-412px", "purpose": "The only shipped device class; there are no media-query breakpoints in the system." }
+    ],
+    "texture": [
+      { "name": "kraft-board", "value": "repeating-linear-gradient(94deg, rgba(0,0,0,0.035) 0 2px, transparent 2px 5px), repeating-linear-gradient(2deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 4px)", "purpose": "The fibrous ground of the drawer board. Never a flat fill." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Commit Key — Print",
+      "kind": "button",
+      "refersTo": "commit-key-print",
+      "description": "The stamp key. Appears only when a printer is connected; the sole red control on screen.",
+      "html": "<button class=\"ds-commit-print\"><svg class=\"ds-commit-glyph\" viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M19 8H5a3 3 0 0 0-3 3v6h4v4h12v-4h4v-6a3 3 0 0 0-3-3zM8 19v-5h8v5H8zm11-6.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2zM18 3H6v4h12V3z\"/></svg><span>Print</span></button>",
+      "css": ".ds-commit-print { display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; min-height: 58px; padding-inline: 0.85rem; background: var(--stamp, #b8352c); color: #fff; border: 1px solid var(--stamp-deep, #8f2721); border-radius: var(--radius-sm, 2px); font-family: var(--font-ui, \"Noto Sans Variable\", system-ui, sans-serif); font-size: 0.78rem; font-weight: 600; letter-spacing: 0.03em; white-space: nowrap; box-shadow: 0 1px 0 rgba(255,255,255,0.16) inset, 0 2px 4px rgba(0,0,0,0.32); } .ds-commit-print:hover { background: var(--stamp-deep, #8f2721); } .ds-commit-print:focus-visible { outline: 2px solid var(--stamp, #b8352c); outline-offset: 2px; } .ds-commit-print:active { box-shadow: 0 1px 2px rgba(0,0,0,0.3) inset; }"
+    },
+    {
+      "name": "Commit Key — Connect / Pairing",
+      "kind": "button",
+      "refersTo": "commit-key-connect",
+      "description": "The same commit slot before a printer exists. Disabled state keeps full opacity and switches to a dashed border so it says why rather than just dimming.",
+      "html": "<button class=\"ds-commit-connect\"><svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M11 3v6.6L7.4 6 6 7.4 10.6 12 6 16.6 7.4 18 11 14.4V21h1l5-5-3.6-4L17 8l-5-5h-1zm2 3.8 1.6 1.6L13 10V6.8zm0 7.8 1.6 1.6L13 17.2v-2.6z\"/></svg><span>Connect</span></button><button class=\"ds-commit-connect\" disabled><span>Pairing…</span></button>",
+      "css": ".ds-commit-connect { display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; min-height: 58px; padding-inline: 0.85rem; margin-right: 0.5rem; background: var(--drawer-raised, #433527); color: var(--ink-primary, #f0e6d2); border: 1px solid rgba(240,230,210,0.11); border-radius: var(--radius-sm, 2px); font-family: var(--font-ui, \"Noto Sans Variable\", system-ui, sans-serif); font-size: 0.78rem; font-weight: 600; letter-spacing: 0.03em; white-space: nowrap; } .ds-commit-connect:hover:not(:disabled) { background: var(--drawer-high, #54432f); border-color: rgba(240,230,210,0.22); } .ds-commit-connect:focus-visible { outline: 2px solid var(--stamp, #b8352c); outline-offset: 2px; } .ds-commit-connect:disabled { opacity: 1; color: var(--ink-secondary, #bda882); border-style: dashed; }"
+    },
+    {
+      "name": "Drawer Tab",
+      "kind": "nav",
+      "refersTo": "tab",
+      "description": "Bottom-edge tool tabs. An open tab is a drawer tab pulled forward into the light and merges into the tray it opens.",
+      "html": "<nav class=\"ds-tabrow\"><button class=\"ds-tab\"><svg viewBox=\"0 0 24 24\" width=\"22\" height=\"22\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z\"/></svg><span>Add</span></button><button class=\"ds-tab ds-tab-on\"><svg viewBox=\"0 0 24 24\" width=\"22\" height=\"22\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M21 6H3a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1zm-1 10H4V8h2v4h2V8h2v4h2V8h2v4h2V8h2v8z\"/></svg><span>Label</span></button><button class=\"ds-tab ds-tab-flagged\"><svg viewBox=\"0 0 24 24\" width=\"22\" height=\"22\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M3 5h18v3H3V5zm0 5.5h18v3H3v-3zM3 16h18v3H3v-3z\"/></svg><span>Data</span></button></nav>",
+      "css": ".ds-tabrow { display: flex; gap: 0.25rem; padding: 0.4rem 0.5rem 0.5rem; background: linear-gradient(180deg, var(--drawer-raised, #433527), var(--drawer-deep, #241d16)); border-top: 1px solid var(--drawer-edge, #6b573d); } .ds-tab { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.15rem; flex: 1 1 0; min-width: 3.9rem; min-height: 58px; padding: 0.3rem 0.35rem; background: transparent; border: 1px solid transparent; border-radius: 2px 2px 0 0; color: var(--ink-secondary, #bda882); font-family: var(--font-ui, \"Noto Sans Variable\", system-ui, sans-serif); font-size: 0.72rem; letter-spacing: 0.02em; white-space: nowrap; } .ds-tab:hover { color: var(--ink-primary, #f0e6d2); background: rgba(240,230,210,0.06); } .ds-tab:focus-visible { outline: 2px solid var(--stamp, #b8352c); outline-offset: 2px; } .ds-tab-on { background: var(--card, #f2e9d5); border-color: var(--control-border, #b9a684); border-bottom-color: var(--card, #f2e9d5); color: var(--ink-on-card, #2a241c); font-weight: 600; } .ds-tab-flagged::after { content: \"\"; width: 5px; height: 5px; border-radius: 50%; background: var(--status-ok, #7d9a55); }"
+    },
+    {
+      "name": "Status Plate",
+      "kind": "custom",
+      "refersTo": "status-plate",
+      "description": "The drawer front: the LIA wordmark butted against the printer link as one uninterrupted strip. Status only, never an action.",
+      "html": "<div class=\"ds-plate\"><span class=\"ds-wordmark\">LIA</span><span class=\"ds-status\"><span class=\"ds-live\"></span><span class=\"ds-who\">D11s</span></span></div>",
+      "css": ".ds-plate { display: inline-flex; align-items: stretch; border: 1px solid var(--drawer-edge, #6b573d); border-radius: var(--radius-sm, 2px); background: var(--drawer-deep, #241d16); overflow: hidden; } .ds-wordmark { display: inline-flex; align-items: center; padding: 0 0.55rem; background: var(--card, #f2e9d5); border-right: 1px solid var(--drawer-edge, #6b573d); font-family: var(--font-notation, \"Noto Sans Mono Variable\", ui-monospace, monospace); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.12em; color: var(--ink-on-card, #2a241c); } .ds-status { display: inline-flex; align-items: center; gap: 0.35rem; min-height: 48px; padding: 0.28rem 0.55rem; background: var(--drawer-deep, #241d16); font-family: var(--font-notation, \"Noto Sans Mono Variable\", ui-monospace, monospace); font-size: 0.7rem; color: var(--ink-primary, #f0e6d2); } .ds-live { width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--status-ok, #7d9a55); box-shadow: 0 0 0 2px rgba(125,154,85,0.22); } .ds-who { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 12ch; }"
+    },
+    {
+      "name": "Card Mat",
+      "kind": "card",
+      "refersTo": "card-mat",
+      "description": "The artifact holder: the label canvas on bright stock, with ruled-blue registration ticks outside the label area and a fixed filing line beneath.",
+      "html": "<div class=\"ds-matwrap\"><div class=\"ds-mat\"><div class=\"ds-canvas\">Text</div></div><p class=\"ds-filing\">232 &times; 96 PX <span class=\"ds-sep\">&middot;</span> FEEDS LEFT</p></div>",
+      "css": ".ds-matwrap { display: inline-flex; flex-direction: column; align-items: center; gap: 0.6rem; } .ds-mat { padding: 0.55rem; background: var(--card-bright, #fbf6ea); border: 1px solid var(--control-border, #b9a684); border-radius: var(--radius-sm, 2px); box-shadow: 0 1px 1px rgba(0,0,0,0.22), 0 6px 14px rgba(0,0,0,0.3); } .ds-canvas { position: relative; display: flex; align-items: center; justify-content: center; width: 232px; height: 96px; background: #fff; border: 1px solid rgba(125,155,181,0.38); color: #000; font-family: var(--font-ui, \"Noto Sans Variable\", system-ui, sans-serif); font-size: 44px; } .ds-canvas::before { content: \"\"; position: absolute; top: 0; bottom: 0; left: -5px; width: 3px; pointer-events: none; background: repeating-linear-gradient(180deg, var(--card-rule, #7d9bb5) 0 4px, transparent 4px 9px); } .ds-filing { margin: 0; font-family: var(--font-ui, \"Noto Sans Variable\", system-ui, sans-serif); font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-secondary, #bda882); } .ds-sep { color: var(--ink-muted, #5c4c39); padding: 0 0.2rem; }"
+    },
+    {
+      "name": "Tray",
+      "kind": "custom",
+      "refersTo": "tray",
+      "description": "Card stock pulled out over the lower board, capped at 41% of board height so the card above stays fully visible.",
+      "html": "<section class=\"ds-tray\"><div class=\"ds-tray-inner\"><div class=\"ds-tray-head\"><span class=\"ds-tray-title\">Add to label</span></div><div class=\"ds-tray-body\">Tool controls file here.</div></div></section>",
+      "css": ".ds-tray { display: block; background: var(--card, #f2e9d5); border-top: 1px solid var(--control-border, #b9a684); box-shadow: 0 -2px 18px rgba(0,0,0,0.34); } .ds-tray-inner { padding: 0.6rem 0.75rem 0.85rem; } .ds-tray-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding-bottom: 0.4rem; margin-bottom: 0.6rem; border-bottom: 1px solid rgba(125,155,181,0.38); } .ds-tray-title { font-family: var(--font-notation, \"Noto Sans Mono Variable\", ui-monospace, monospace); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-on-card-2, #6b5f4e); } .ds-tray-body { font-family: var(--font-ui, \"Noto Sans Variable\", system-ui, sans-serif); font-size: 0.85rem; color: var(--ink-on-card, #2a241c); }"
+    },
+    {
+      "name": "Input Field",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Card stock you type on, set in the notation face with tabular figures.",
+      "html": "<input class=\"ds-field\" type=\"text\" value=\"232\" aria-label=\"Width in pixels\"><input class=\"ds-field\" type=\"text\" value=\"96\" disabled aria-label=\"Height, locked\">",
+      "css": ".ds-field { width: 7rem; margin-right: 0.5rem; padding: 0.45rem 0.6rem; background: var(--control-bg, #ece2cb); border: 1px solid var(--control-border, #b9a684); border-radius: var(--radius-sm, 2px); color: var(--ink-on-card, #2a241c); font-family: var(--font-notation, \"Noto Sans Mono Variable\", ui-monospace, monospace); font-variant-numeric: tabular-nums; font-size: 0.85rem; } .ds-field::placeholder { color: var(--ink-on-card-2, #6b5f4e); opacity: 1; } .ds-field:focus { outline: none; background: var(--card-bright, #fbf6ea); border-color: var(--stamp, #b8352c); box-shadow: 0 0 0 3px rgba(184,53,44,0.55); } .ds-field:disabled { background: var(--card-sunk, #e6dbc2); color: var(--ink-on-card-2, #6b5f4e); }"
+    },
+    {
+      "name": "Ghost Key",
+      "kind": "button",
+      "refersTo": "ghost-key",
+      "description": "Reversible furniture on the board (undo, redo). Disabled uses a dedicated ink token at full opacity, never a dim.",
+      "html": "<button class=\"ds-ghost\" aria-label=\"Undo\"><svg viewBox=\"0 0 24 24\" width=\"22\" height=\"22\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M12.5 8c-2.6 0-5 1-6.8 2.6L2 7v9h9l-3.6-3.6A7.5 7.5 0 0 1 19.6 15l2.4-.8A10 10 0 0 0 12.5 8z\"/></svg></button><button class=\"ds-ghost\" disabled aria-label=\"Redo\"><svg viewBox=\"0 0 24 24\" width=\"22\" height=\"22\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M18.3 10.6A9.9 9.9 0 0 0 11.5 8a10 10 0 0 0-9.5 6.2l2.4.8A7.5 7.5 0 0 1 16.6 12.4L13 16h9V7l-3.7 3.6z\"/></svg></button>",
+      "css": ".ds-ghost { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; margin-right: 0.15rem; background: transparent; border: 1px solid transparent; border-radius: var(--radius-sm, 2px); color: var(--ink-secondary, #bda882); } .ds-ghost:hover:not(:disabled) { background: var(--drawer-raised, #433527); border-color: rgba(240,230,210,0.11); color: var(--ink-primary, #f0e6d2); } .ds-ghost:focus-visible { outline: 2px solid var(--stamp, #b8352c); outline-offset: 2px; } .ds-ghost:disabled { color: var(--ink-disabled, #a2907a); opacity: 1; }"
+    },
+    {
+      "name": "Withdraw Key",
+      "kind": "button",
+      "refersTo": "withdraw-key",
+      "description": "Destructive action as a card struck from the catalogue. Never painted in the commit colour.",
+      "html": "<button class=\"ds-withdraw\">Delete label</button>",
+      "css": ".ds-withdraw { padding: 0.45rem 0.8rem; background: var(--drawer-raised, #433527); border: 1px solid rgba(240,230,210,0.11); border-radius: var(--radius-sm, 2px); color: var(--withdrawn, #9b8a70); font-family: var(--font-ui, \"Noto Sans Variable\", system-ui, sans-serif); font-size: 0.8rem; text-decoration-color: var(--withdrawn, #9b8a70); } .ds-withdraw:hover, .ds-withdraw:focus-visible { background: var(--drawer-high, #54432f); border-color: var(--withdrawn, #9b8a70); color: var(--ink-primary, #f0e6d2); text-decoration: line-through; text-decoration-thickness: 2px; } .ds-withdraw:focus-visible { outline: 2px solid var(--stamp, #b8352c); outline-offset: 2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Catalogue Drawer",
+    "overview": "A label exists so you can find the thing again. The app is therefore the drawer you file it in, not a canvas you draw on. Kraft drawer board is the ground; the label under design is an index card lying on that board, and it is the brightest surface and the only true black ink on screen. Every other surface is furniture: raised kraft for keys, a typed plate for the drawer front, a card-stock tray that pulls out from under the card. Nothing floats over the artifact.\n\nDensity is low by intent and by device. This ships as a single Android phone app used one-handed, standing at the printer, so reach and target size outrank information density: tabs are 62x58, the commit key 109x58, every ghost and rail control at least 48px. The catalogue ships its measurements in a monospaced notation face with tabular figures, because a dimension that shifts width as it updates is a dimension you cannot read at a glance.\n\nThe world refuses the floating-toolbar mobile editor: no palette hovering over the work, no bottom sheet that shoves the card off screen. Tool surfaces slide out beneath a card that never moves. The shipped build also collapses Connect and Print into one state-dependent key in a single commit slot, so there is exactly one place a print begins, and the status rail carries state only.",
+    "keyCharacteristics": [
+      "Kraft board ground, index-card stock for the artifact, stamp red for commit and nothing else",
+      "Square-cut stock: 2-4px radii, hairline rules, no soft pill geometry",
+      "The card never moves; trays pull out beneath it (measured displacement 0px)",
+      "Monospaced notation with tabular figures for every measurement, count and device id",
+      "One authored motion: the drawer pull. No fades, no springs, no ambient animation",
+      "Touch floor 48px, primary controls 58px"
+    ],
+    "rules": [
+      { "name": "The One Red Rule", "body": "Stamp red marks commit and only commit. Delete, disconnect, and every destructive path use withdrawn grey with a strikethrough. If red appears on a control that does not print, it is a bug.", "section": "colors" },
+      { "name": "The Brightest-Is-The-Artifact Rule", "body": "The label card is the brightest surface and carries the only true black on screen. No chrome may out-brighten it; if a panel needs more light than the card, the panel is wrong.", "section": "colors" },
+      { "name": "The Not-Alone Rule", "body": "State is never carried by colour alone. The live dot changes shape as well as hue (6px circle when connected, 1px-radius square when faltering, hollow ring when empty), the disabled commit key switches to a dashed border, and every state carries a text label.", "section": "colors" },
+      { "name": "The Contrast Floor", "body": "Measured on the shipped build: filing line 6.15:1, tab label 6.15:1, status 7.2:1, commit key 9.54:1, wordmark on stock 12.72:1, disabled ghost 4.68:1. Nothing ships below 4.5:1.", "section": "colors" },
+      { "name": "The Notation Rule", "body": "Every measured quantity - millimetres, pixels, densities, counts, device ids, commit hashes - sets in the mono face with tabular figures. A number that changes width as it updates is unreadable at arm's length.", "section": "typography" },
+      { "name": "The Named Key Rule", "body": "Any control that commits or changes device state carries a word. Icon-only is permitted only for reversible, self-evident furniture (undo, redo, the overflow menu).", "section": "typography" },
+      { "name": "The Bundled Face Rule", "body": "No webfont is fetched at runtime. Both families are self-hosted variable woff2; the system stack is a fallback, never the shipped face.", "section": "typography" },
+      { "name": "The Light-From-Above Rule", "body": "Shadows fall downward from a fixed overhead source. The single exception is the tray, whose shadow casts upward precisely because it emerges from beneath the card.", "section": "elevation" },
+      { "name": "The No-Floating-Chrome Rule", "body": "Nothing is elevated over the card. Panels, trays and menus occupy the board beside or beneath the artifact; the artifact is never eclipsed.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep stamp red for commit alone. One red control on screen at a time.",
+      "Do keep the card the brightest surface and the only true black on screen.",
+      "Do open tool surfaces from the bottom edge beneath a card that does not move. Measured displacement must stay 0px.",
+      "Do set every measurement in the notation face with tabular figures.",
+      "Do give every commit or device-state control a word alongside its glyph.",
+      "Do hold 48px as the touch floor and 58px for rail-level controls.",
+      "Do express disabled with a dedicated ink token and a shape change (dashed border), never with opacity alone.",
+      "Do carry state in shape and text as well as colour.",
+      "Do keep motion to the drawer pull (220ms cubicOut, 0ms reduced-motion) and honour prefers-reduced-motion.",
+      "Do cut stock square: 2-4px radii and 1px hairlines.",
+      "Do theme browser-native surfaces - selection, caret, scrollbars, focus ring - from the palette.",
+      "Do apply image-rendering: pixelated only at whole-number zoom, so the preview never misreports the print."
+    ],
+    "donts": [
+      "Don't paint a destructive action red. Struck-through withdrawn grey is the destructive language.",
+      "Don't float a toolbar, palette, or sheet over the card. Chrome sits beside or beneath the artifact.",
+      "Don't add a second way to start a print or a connection. One commit slot, one state-dependent key.",
+      "Don't let a tray exceed 41% of the board height; a card you cannot see is a card you have left.",
+      "Don't introduce a fourth shadow token or a hard offset shadow. This world is lit from above and diffuse.",
+      "Don't fetch a font at runtime or fall back to a system display face.",
+      "Don't round past 4px or introduce pill and capsule geometry.",
+      "Don't add hover lifts, fades, springs, or ambient animation; the drawer pull is the whole motion vocabulary.",
+      "Don't scale the canvas backing store to fit the stage - scale CSS size only, so the drawn pixels stay the printed pixels.",
+      "Don't use a flat fill for the board; the kraft texture is the ground."
+    ]
+  }
+}
