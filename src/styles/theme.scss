@@ -318,6 +318,58 @@ a {
   }
 }
 
+// ── Ink on card stock ──────────────────────────────────────────
+//
+// Dropdowns and modals are card stock, so everything inside them must be
+// re-inked. Without this, a bare .btn or plain text inherits the kraft ink
+// (#f0e6d2) and renders cream on cream — present, focusable, invisible.
+
+.dropdown-menu,
+.modal-content {
+  color: var(--ink-on-card);
+  --bs-body-color: var(--ink-on-card);
+  --bs-emphasis-color: var(--ink-on-card);
+  --bs-heading-color: var(--ink-on-card);
+  --bs-secondary-color: var(--ink-on-card-2);
+  --bs-tertiary-color: var(--ink-on-card-2);
+  // Cascades into unstyled .btn; variant classes set their own and still win
+  --bs-btn-color: var(--ink-on-card);
+  --bs-btn-hover-color: var(--ink-on-card);
+  --bs-btn-hover-bg: var(--card-sunk);
+  --bs-btn-active-color: var(--ink-on-card);
+  --bs-btn-active-bg: var(--card-sunk);
+  --bs-border-color: var(--card-rule-soft);
+
+  hr,
+  .dropdown-divider {
+    border-color: var(--card-rule-soft);
+  }
+
+  a:not(.btn) {
+    color: var(--stamp);
+  }
+
+  // Outline buttons carry their own --bs-btn-color, so the cascade above
+  // cannot reach them: re-ink them explicitly for card stock.
+  .btn-outline-secondary {
+    --bs-btn-color: var(--ink-on-card);
+    --bs-btn-border-color: var(--control-border);
+    --bs-btn-bg: transparent;
+    --bs-btn-hover-bg: var(--card-sunk);
+    --bs-btn-hover-color: var(--ink-on-card);
+    --bs-btn-hover-border-color: var(--ink-on-card-2);
+    --bs-btn-active-bg: var(--card-sunk);
+    --bs-btn-active-color: var(--ink-on-card);
+    --bs-btn-active-border-color: var(--ink-on-card-2);
+  }
+
+  // Bootstrap's muted utilities ship !important and must be beaten
+  .text-secondary,
+  .text-muted {
+    color: var(--ink-on-card-2) !important;
+  }
+}
+
 // ── Dropdowns: a card pulled from the drawer ───────────────────
 
 .dropdown-menu {
@@ -379,6 +431,38 @@ a {
 .alert {
   border-radius: var(--radius-md);
   border-width: 1px;
+}
+
+// ── Pickers as bottom sheets ───────────────────────────────────
+//
+// The icon and object pickers are Bootstrap dropdowns, and the tray they
+// live in scrolls, which makes it a clipping container: a 600px menu opened
+// from an 89px tray renders in full and is clipped entirely out of sight.
+// Position fixed escapes ancestor overflow, so on a phone these become
+// bottom sheets — which is the right pattern here regardless.
+
+@media (max-width: 640px) {
+  .dropdown-menu.show {
+    position: fixed !important;
+    inset: auto 0 0 0 !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 72dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    border-bottom: 0;
+    padding-bottom: env(safe-area-inset-bottom);
+    box-shadow: 0 -10px 34px rgba(0, 0, 0, 0.5);
+    z-index: 1060;
+  }
+
+  // The sheet's own scroll region, so the header and search stay put
+  .dropdown-menu.show .icons {
+    max-height: 42dvh;
+    overflow-y: auto;
+  }
 }
 
 // ── Withdrawal ─────────────────────────────────────────────────
