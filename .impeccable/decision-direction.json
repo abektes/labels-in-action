@@ -1,0 +1,142 @@
+{
+  "title": "Choose the visual world for Fichero Labels",
+  "question": "The roll assigned The Catalogue Drawer. Keep it, take an alternate, or re-roll.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "The Catalogue Drawer",
+      "kicker": "THE ROLL",
+      "lineage": "library card catalogues, archival index stock, drawer tabs, the rubber date stamp",
+      "thesis": "A label exists so you can find the thing again, so the app is the drawer you file it in, not a canvas you draw on.",
+      "palette": ["#3a2f24", "#f2e9d5", "#b8352c", "#7d9bb5", "#8a6f4a"],
+      "materials": ["index card stock", "kraft drawer board", "ruled hairlines", "rubber date stamp"],
+      "viewport": "The label under design sits as an index card on kraft drawer board at true proportions, the brightest thing on screen; a status rail reads like a drawer label above it; one stamp-red PRINT key and a row of drawer tabs sit below.",
+      "risk": "Goes twee if the paper is decorated rather than used; the card must stay a working surface, never a skeuomorphic prop.",
+      "raised": [
+        {
+          "from": "challenger-cloud-edge",
+          "raise": "The printed label is the only true black ink on the screen; every UI colour retreats to hairline edges and tab stock."
+        },
+        {
+          "from": "challenger-sneaker-boxes",
+          "raise": "The label's own printed face is the index: saved labels are browsed by their real preview, never by an abstract thumbnail."
+        },
+        {
+          "from": "challenger-drum-machine",
+          "raise": "Every control states itself by illumination, and the empty canvas is a ruled invitation rather than a void."
+        },
+        {
+          "from": "challenger-character-goods",
+          "raise": "Every filed item carries the same fixed furniture: name, date stamp, and dimensions, in the same slots every time."
+        }
+      ]
+    },
+    {
+      "id": "model-pick",
+      "label": "The Handheld Label Maker",
+      "kicker": "IMPECCABLE’S PICK",
+      "lineage": "Dymo and Brother P-touch handhelds: embossed tape, monochrome preview strip, one committed PRINT key",
+      "thesis": "The phone becomes the label maker it replaced, with the preview strip and the print key as the whole interface.",
+      "palette": ["#1c1f1a", "#c9d14a", "#f4f3ee", "#d8452c"],
+      "materials": ["moulded ABS plastic", "segmented LCD", "rubber keymat"],
+      "viewport": "A wide monochrome preview strip locked at the top, a committed keymat below it, and the print key sized like a thumb expects it.",
+      "risk": "Also the direction most runs in this category would land on: it is the literal reading of the brief, and familiarity is its whole appeal."
+    },
+    {
+      "id": "challenger-ikeda",
+      "label": "Datamatics",
+      "verdict": "competitive",
+      "lineage": "Ryoji Ikeda's data-sublime: barcode columns, sine lattices, pure black and white",
+      "thesis": "A one-bit printer deserves a one-bit interface: the screen shows exactly what the printhead can make.",
+      "palette": ["#000000", "#ffffff"],
+      "materials": ["pixel-crisp bars", "hairline rules", "monospace numerics"],
+      "viewport": "The label field as a dense black-and-white bar lattice, monospace tabular numerics packing the margin.",
+      "case": "Fuses unusually well on product clarity: the D11s is literally a 1-bit black-on-white thermal head, and barcodes are a shipped feature, so the world states a hardware truth. Loses audience identification, an art-world register for a solo hobbyist labelling boxes.",
+      "risk": "Pure black and white with no grey leaves nowhere to put disabled, secondary, or error state.",
+      "hero": "https://impeccable.style/worlds/cards/ikeda-datamatics-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/ikeda-datamatics.webp"
+    },
+    {
+      "id": "challenger-precisionist",
+      "label": "Precisionist Plate",
+      "verdict": "competitive",
+      "lineage": "Precisionist industrial painting: flat planes, one raking light, a stencilled numeral for a title",
+      "thesis": "The tool trays are overlapping planes, and the one that holds the light is the one you are working in.",
+      "palette": ["#eae7e0", "#4a5560", "#a8553a", "#15181c"],
+      "materials": ["flat unmodulated planes", "hard-edged shadow", "stencilled numerals"],
+      "viewport": "Overlapping planes in a fixed depth order, the active tray lit by a single raking source, a stencilled numeral where a title would sit.",
+      "case": "Holds product clarity: hard edges and a single light source make active state unambiguous with no soft cues, and sliding planes are a real progressive-disclosure model for the tucked-away tools. Loses audience identification, a workshop resonance that is art-historical rather than the user's own world.",
+      "risk": "Hard shadow at phone scale eats space fast, and the stencilled numeral fights the label's own type.",
+      "hero": "https://impeccable.style/worlds/cards/design-canon-precisionist-industrial-plate-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/design-canon-precisionist-industrial-plate.webp"
+    },
+    {
+      "id": "challenger-sneaker-boxes",
+      "label": "Sneaker Box Stacks",
+      "verdict": "declined",
+      "lineage": "sneaker archive walls: stacked boxes, printed end labels, monospaced size runs",
+      "thesis": "Saved labels as a wall of boxes browsed by their printed end label.",
+      "palette": ["#b5581f", "#141210", "#f6f3ec"],
+      "materials": ["box board", "silhouette line art", "tissue paper"],
+      "viewport": "A wall of stacked box ends, each read by its printed label.",
+      "case": "Fuses partly: the user really does label storage boxes, but the lid-hinge ritual adds steps to a speed-critical task and sneaker culture is not this user's world.",
+      "kept": "The artifact's own printed face is the index.",
+      "risk": "3D lid hinging is decorative overhead on a phone.",
+      "hero": "https://impeccable.style/worlds/cards/textiles-weave-drape-fashion-sneaker-box-stacks-hero.webp"
+    },
+    {
+      "id": "challenger-cloud-edge",
+      "label": "Iridescent Cloud Edge",
+      "verdict": "declined",
+      "lineage": "diffraction at a cloud edge: achromatic field, spectral fringe confined to the border",
+      "thesis": "An achromatic working field with colour confined to hairline edges.",
+      "palette": ["#ffffff", "#5d6a74", "#b8e0cf", "#e8b9c8", "#b9a8dc"],
+      "materials": ["cloud white ground", "hairline spectral band"],
+      "viewport": "A quiet achromatic field, colour living only at band edges.",
+      "case": "Fuses poorly: the observation topology of droplet size and angular distance has no counterpart in a label editor, and the audience has no relationship to meteorology.",
+      "kept": "Colour confined to hairline edges so the content field stays the only ink.",
+      "risk": "Pastel fringes vanish under workshop lighting.",
+      "hero": "https://impeccable.style/worlds/cards/clouds-storms-auroras-iridescent-cloud-edge-hero.webp"
+    },
+    {
+      "id": "challenger-drum-machine",
+      "label": "Drum Machine Step Row",
+      "verdict": "declined",
+      "lineage": "early-80s rhythm machines: sixteen lit step keys, chase light, silkscreen caps",
+      "thesis": "Controls that announce their state by illumination on a charcoal panel.",
+      "palette": ["#2b2b2b", "#d0342c", "#e8862b", "#f0c93f", "#f4f4f0"],
+      "materials": ["charcoal panel", "candy keycaps", "lit LEDs", "silkscreen caps"],
+      "viewport": "An unbroken row of lit step keys under a running chase light.",
+      "case": "Fuses poorly: a label editor has no timeline and no clock, so the step row and chase light have nothing to measure, and the musical register misses this audience.",
+      "kept": "Every control announces its state by illumination, and an empty pattern is an invitation rather than a void.",
+      "risk": "A timeline grammar imposed on a tool with no time axis.",
+      "hero": "https://impeccable.style/worlds/cards/signals-instruments-drum-machine-step-row-hero.webp"
+    },
+    {
+      "id": "challenger-character-goods",
+      "label": "Character Goods Catalog",
+      "verdict": "declined",
+      "lineage": "character goods catalogues: ranked pastel mascots, name plates, birthdays",
+      "thesis": "A ranked roster where every item carries identical personal furniture.",
+      "palette": ["#f8d7e3", "#cfe8f5", "#fbf3c7", "#ffffff"],
+      "materials": ["flat pastel fills", "white keylines", "ribbon accents"],
+      "viewport": "A pastel grid of ranked cells, each with a name plate beneath it.",
+      "case": "Fuses poorly on both axes: a finite ranked roster is the wrong topology for an open-ended editor, and the register is wrong for a solo workshop tool.",
+      "kept": "Fixed per-item furniture in identical slots every time.",
+      "risk": "Pastel and rounded mascots read as a children's toy beside a thermal printer.",
+      "hero": "https://impeccable.style/worlds/cards/pop-culture-shelf-character-goods-catalog-hero.webp"
+    }
+  ],
+  "reroll": { "registers": ["safer", "bolder"] },
+  "buildPath": { "value": "code" },
+  "canon": true,
+  "canonCard": {
+    "label": "The category standard",
+    "thesis": "What every mobile design tool ships: a neutral canvas, a floating bottom toolbar, a blue primary action.",
+    "palette": ["#ffffff", "#111827", "#2563eb", "#6b7280"],
+    "materials": ["clean grid", "floating toolbar", "rounded cards"],
+    "viewport": "Canvas centred, contextual toolbar docked to the bottom edge, a blue Print button top-right.",
+    "risk": "Indistinguishable from Canva, Figma mobile, and every other editor by design."
+  },
+  "steer": true
+}

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Labels in Action</string>
+    <string name="title_activity_main">Labels in Action</string>
+    <string name="package_name">nl.abektes.fichero</string>
+    <string name="custom_url_scheme">nl.abektes.fichero</string>
+</resources>

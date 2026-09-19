@@ -1,0 +1,169 @@
+<script lang="ts">
+  import type { ExportedLabelTemplate, LabelProps } from "$/types";
+  import { tr } from "$/utils/i18n";
+  import MdIcon from "$/components/basic/MdIcon.svelte";
+
+  interface Props {
+    onItemClicked: (index: number) => void;
+    onItemDelete: (index: number) => void;
+    onItemExport: (index: number) => void;
+    labels: ExportedLabelTemplate[];
+    selectedIndex?: number;
+    class?: string;
+  }
+
+  let { onItemClicked, onItemDelete, onItemExport, labels, selectedIndex = -1, class: className }: Props = $props();
+
+  let deleteIndex = $state<number>(-1);
+
+  const scaleDimensions = (preset: LabelProps): { width: number; height: number } => {
+    const scaleFactor = Math.min(100 / preset.size.width, 100 / preset.size.height);
+    return {
+      width: Math.round(preset.size.width * scaleFactor),
+      height: Math.round(preset.size.height * scaleFactor),
+    };
+  };
+
+  const deleteConfirmed = (e: MouseEvent, idx: number) => {
+    e.stopPropagation();
+    deleteIndex = -1;
+    onItemDelete(idx);
+  };
+
+  const deleteRejected = (e: MouseEvent) => {
+    e.stopPropagation();
+    deleteIndex = -1;
+  };
+
+  const deleteRequested = (e: MouseEvent, idx: number) => {
+    e.stopPropagation();
+    deleteIndex = idx;
+  };
+
+  const exportRequested = (e: MouseEvent, idx: number) => {
+    e.stopPropagation();
+    onItemExport(idx);
+  };
+</script>
+
+<div class="labels-browser overflow-y-auto border d-flex p-2 gap-1 flex-wrap {className}">
+  {#each labels as item, idx (item.id ?? item.timestamp)}
+    <div
+      tabindex="0"
+      class="btn p-0 card-wrapper d-flex justify-content-center align-items-center {selectedIndex === idx
+        ? 'border-primary'
+        : ''}"
+      onkeydown={() => onItemClicked(idx)}
+      onclick={() => onItemClicked(idx)}
+      role="button">
+      <div
+        class="card print-start-{item.label.printDirection} d-flex justify-content-center align-items-center"
+        style="width: {scaleDimensions(item.label).width}%; height: {scaleDimensions(item.label).height}%;">
+        <div class="buttons d-flex">
+          <button
+            class="btn text-primary-emphasis"
+            onclick={(e) => exportRequested(e, idx)}
+            title={$tr("params.saved_labels.save.json")}>
+            <MdIcon icon="download" />
+          </button>
+
+          {#if deleteIndex === idx}
+            <button class="remove btn withdraw" onclick={(e) => deleteConfirmed(e, idx)}>
+              <MdIcon icon="delete" />
+            </button>
+            <button class="remove btn text-success" onclick={(e) => deleteRejected(e)}>
+              <MdIcon icon="close" />
+            </button>
+          {:else}
+            <button class="remove btn withdraw" onclick={(e) => deleteRequested(e, idx)}>
+              <MdIcon icon="delete" />
+            </button>
+          {/if}
+        </div>
+
+        {#if item.thumbnailBase64}
+          <img class="thumbnail" src={item.thumbnailBase64} alt="thumbnail" />
+        {/if}
+
+        {#if item.title}
+          <span class="label p-1">
+            {item.title}
+          </span>
+        {/if}
+      </div>
+    </div>
+  {/each}
+</div>
+
+<style>
+  .labels-browser {
+    max-height: 200px;
+    max-width: 100%;
+    min-height: 96px;
+  }
+
+  .card-wrapper {
+    width: 96px;
+    height: 96px;
+    border-radius: var(--radius-sm);
+    transition: background-color 0.15s;
+  }
+
+  .card-wrapper:hover {
+    background-color: var(--surface-1);
+  }
+
+  .card {
+    background-color: var(--surface-2);
+    border: 1px solid var(--border-standard);
+    border-radius: var(--radius-sm);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card > .buttons {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .card-wrapper:hover .buttons {
+    opacity: 1;
+  }
+
+  .card > .buttons > button {
+    padding: 0;
+    line-height: 100%;
+    font-size: 0.75rem;
+  }
+
+  .card > .label {
+    background-color: rgba(0, 0, 0, 0.55);
+    color: var(--ink-primary);
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    z-index: 1;
+    font-size: 0.7rem;
+    line-height: 1.2;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+  }
+
+  .card.print-start-left {
+    border-left: 2px solid var(--mark-feed);
+  }
+  .card.print-start-top {
+    border-top: 2px solid var(--mark-feed);
+  }
+
+  .card .thumbnail {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+  }
+</style>

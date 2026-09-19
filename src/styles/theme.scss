@@ -1,0 +1,399 @@
+// Fichero Labels — "The Catalogue Drawer"
+//
+// A label exists so you can find the thing again, so this app is the drawer you
+// file it in. Kraft drawer board is the ground; the label under design is an
+// index card lying on it, and it is the only true black ink on the screen.
+// Stamp red is the sole accent and it means one thing: commit / print.
+//
+// Legacy token names are preserved so existing components keep resolving; their
+// values now belong to this world.
+
+// ── Design tokens ──────────────────────────────────────────────
+
+:root {
+  // Drawer board (kraft) — the ground the cards lie on
+  --drawer-deep: #241d16;
+  --drawer: #33291f;
+  --drawer-raised: #433527;
+  --drawer-high: #54432f;
+  --drawer-edge: #6b573d;
+
+  --surface-0: var(--drawer-deep);
+  --surface-1: var(--drawer);
+  --surface-2: var(--drawer-raised);
+  --surface-3: var(--drawer-high);
+
+  // Card stock — anything you write on or read from
+  --card: #f2e9d5;
+  --card-bright: #fbf6ea;
+  --card-sunk: #e6dbc2;
+  --card-rule: #7d9bb5;
+  --card-rule-soft: rgba(125, 155, 181, 0.38);
+
+  // Ink on kraft
+  --ink-primary: #f0e6d2;
+  --ink-secondary: #bda882;
+  --ink-tertiary: #8a7962;
+  --ink-muted: #5c4c39;
+  // Unavailable, but still legible: 4.68:1 on the drawer ground. Undo/redo
+  // start disabled, so this is the first ink the user reads.
+  --ink-disabled: #a2907a;
+
+  // Ink on card stock
+  --ink-on-card: #2a241c;
+  --ink-on-card-2: #6b5f4e;
+
+  // The stamp — commit, print, live. The only accent in the world.
+  --stamp: #b8352c;
+  --stamp-deep: #8f2721;
+  --stamp-subtle: rgba(184, 53, 44, 0.12);
+  --stamp-rgb: 184, 53, 44;
+
+  --fichero: var(--stamp);
+  --fichero-hover: var(--stamp-deep);
+  --fichero-subtle: var(--stamp-subtle);
+  --fichero-rgb: var(--stamp-rgb);
+
+  // Withdrawn — destructive reads as struck from the catalogue, never as alarm red
+  --withdrawn: #9b8a70;
+
+  // Registration: where the printhead starts. A ruled guide, not an alarm.
+  --mark-feed: var(--card-rule);
+
+  // Semantic
+  --status-ok: #7d9a55;
+  --status-ok-rgb: 125, 154, 85;
+  --status-warn: #c2842c;
+  --status-warn-rgb: 194, 132, 44;
+  --status-danger: #d4503f;
+  --status-danger-rgb: 212, 80, 63;
+
+  // Borders — hairlines, as ruled on stock
+  --border-standard: rgba(240, 230, 210, 0.11);
+  --border-soft: rgba(240, 230, 210, 0.06);
+  --border-emphasis: rgba(240, 230, 210, 0.22);
+  --border-focus: rgba(184, 53, 44, 0.55);
+
+  // Controls are card stock you type on
+  --control-bg: #ece2cb;
+  --control-border: #b9a684;
+
+  // Radii — catalogue stock is cut square
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
+
+  // Type
+  --font-ui: "Noto Sans Variable", system-ui, sans-serif;
+  --font-notation: "Noto Sans Mono Variable", ui-monospace, monospace;
+
+  // Depth — a card resting on board, lit from above
+  --lift-card: 0 1px 1px rgba(0, 0, 0, 0.22), 0 6px 14px rgba(0, 0, 0, 0.3);
+  --lift-tray: 0 -2px 18px rgba(0, 0, 0, 0.34);
+  --lift-key: 0 1px 0 rgba(255, 255, 255, 0.16) inset, 0 2px 4px rgba(0, 0, 0, 0.32);
+}
+
+// ── Bootstrap overrides ────────────────────────────────────────
+
+[data-bs-theme="dark"] {
+  --bs-body-bg: var(--drawer-deep);
+  --bs-body-bg-rgb: 36, 29, 22;
+  --bs-body-color: var(--ink-primary);
+  --bs-body-color-rgb: 240, 230, 210;
+
+  --bs-secondary-bg: var(--drawer);
+  --bs-secondary-color: var(--ink-secondary);
+  --bs-tertiary-bg: var(--drawer-raised);
+  --bs-tertiary-color: var(--ink-tertiary);
+
+  --bs-border-color: var(--border-standard);
+  --bs-border-color-translucent: var(--border-standard);
+
+  --bs-primary: var(--stamp);
+  --bs-primary-rgb: var(--stamp-rgb);
+  --bs-danger: var(--status-danger);
+  --bs-danger-rgb: var(--status-danger-rgb);
+  --bs-success: var(--status-ok);
+  --bs-success-rgb: var(--status-ok-rgb);
+  --bs-warning: var(--status-warn);
+  --bs-warning-rgb: var(--status-warn-rgb);
+
+  --bs-primary-bg-subtle: var(--stamp-subtle);
+  --bs-primary-text-emphasis: #e0887e;
+  --bs-danger-bg-subtle: rgba(212, 80, 63, 0.14);
+  --bs-danger-border-subtle: rgba(212, 80, 63, 0.3);
+  --bs-danger-text-emphasis: #eb9184;
+  --bs-success-bg-subtle: rgba(125, 154, 85, 0.14);
+  --bs-success-border-subtle: rgba(125, 154, 85, 0.3);
+  --bs-success-text-emphasis: #a9c47c;
+  --bs-warning-bg-subtle: rgba(194, 132, 44, 0.14);
+  --bs-warning-border-subtle: rgba(194, 132, 44, 0.3);
+  --bs-warning-text-emphasis: #dba95e;
+
+  --bs-link-color: var(--ink-secondary);
+  --bs-link-color-rgb: 189, 168, 130;
+  --bs-link-hover-color: var(--ink-primary);
+
+  --bs-focus-ring-color: var(--border-focus);
+
+  --bs-border-radius: var(--radius-sm);
+  --bs-border-radius-lg: var(--radius-md);
+  --bs-border-radius-xl: var(--radius-lg);
+}
+
+// ── Browser surfaces: the parts we did not draw still carry the world ──
+
+::selection {
+  background: var(--stamp);
+  color: #fff;
+}
+
+:root {
+  caret-color: var(--stamp);
+  scrollbar-color: var(--drawer-high) transparent;
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--drawer-high);
+  border-radius: 0;
+  border-left: 1px solid var(--border-standard);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--drawer-edge);
+}
+
+a {
+  text-underline-offset: 0.18em;
+  text-decoration-thickness: 1px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--stamp);
+  outline-offset: 2px;
+}
+
+// Measurement is always set in the notation face, with aligned figures
+.notation,
+.font-notation {
+  font-family: var(--font-notation);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  letter-spacing: 0.01em;
+}
+
+// ── Buttons ────────────────────────────────────────────────────
+
+// The stamp key: commit. Red means print, and nothing else in this world.
+.btn-primary {
+  --bs-btn-bg: var(--stamp);
+  --bs-btn-border-color: var(--stamp-deep);
+  --bs-btn-color: #fff;
+  --bs-btn-hover-bg: var(--stamp-deep);
+  --bs-btn-hover-border-color: var(--stamp-deep);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-active-bg: var(--stamp-deep);
+  --bs-btn-active-border-color: var(--stamp-deep);
+  --bs-btn-active-color: #fff;
+  --bs-btn-disabled-bg: var(--drawer-raised);
+  --bs-btn-disabled-border-color: var(--border-emphasis);
+  --bs-btn-disabled-color: var(--ink-secondary);
+  --bs-btn-disabled-opacity: 1;
+  box-shadow: var(--lift-key);
+
+  &:active {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) inset;
+  }
+
+  &:disabled,
+  &.disabled {
+    box-shadow: none;
+  }
+}
+
+// Drawer furniture: raised kraft
+.btn-secondary,
+.btn-light {
+  --bs-btn-bg: var(--drawer-raised);
+  --bs-btn-border-color: var(--border-standard);
+  --bs-btn-color: var(--ink-primary);
+  --bs-btn-hover-bg: var(--drawer-high);
+  --bs-btn-hover-border-color: var(--border-emphasis);
+  --bs-btn-hover-color: var(--ink-primary);
+  --bs-btn-active-bg: var(--drawer-high);
+  --bs-btn-active-border-color: var(--drawer-edge);
+  --bs-btn-active-color: var(--ink-primary);
+  --bs-btn-disabled-bg: var(--drawer);
+  --bs-btn-disabled-border-color: var(--border-soft);
+  --bs-btn-disabled-color: var(--ink-muted);
+}
+
+// Withdrawn: a card struck from the catalogue. Never alarm red.
+.btn-danger {
+  --bs-btn-bg: var(--drawer-raised);
+  --bs-btn-border-color: var(--border-standard);
+  --bs-btn-color: var(--withdrawn);
+  --bs-btn-hover-bg: var(--drawer-high);
+  --bs-btn-hover-border-color: var(--withdrawn);
+  --bs-btn-hover-color: var(--ink-primary);
+  --bs-btn-active-bg: var(--drawer-high);
+  --bs-btn-active-border-color: var(--withdrawn);
+  --bs-btn-active-color: var(--ink-primary);
+}
+
+.btn-outline-secondary {
+  --bs-btn-color: var(--ink-secondary);
+  --bs-btn-border-color: var(--border-emphasis);
+  --bs-btn-bg: transparent;
+  --bs-btn-hover-bg: var(--drawer-raised);
+  --bs-btn-hover-border-color: var(--drawer-edge);
+  --bs-btn-hover-color: var(--ink-primary);
+  --bs-btn-active-bg: var(--drawer-high);
+  --bs-btn-active-border-color: var(--drawer-edge);
+  --bs-btn-active-color: var(--ink-primary);
+}
+
+// ── Form controls: card stock you type on ──────────────────────
+
+.form-control,
+.form-select {
+  background-color: var(--control-bg);
+  border-color: var(--control-border);
+  color: var(--ink-on-card);
+  font-family: var(--font-notation);
+  font-variant-numeric: tabular-nums;
+
+  &::placeholder {
+    color: var(--ink-on-card-2);
+    opacity: 1;
+  }
+
+  &:focus {
+    background-color: var(--card-bright);
+    border-color: var(--stamp);
+    color: var(--ink-on-card);
+    box-shadow: 0 0 0 3px var(--border-focus);
+  }
+
+  &:disabled {
+    background-color: var(--card-sunk);
+    color: var(--ink-on-card-2);
+  }
+}
+
+.form-select {
+  // Re-draw Bootstrap's chevron in card ink rather than shipping its default
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%232a241c' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+}
+
+.input-group-text {
+  background-color: var(--drawer-raised);
+  border-color: var(--control-border);
+  color: var(--ink-secondary);
+  font-family: var(--font-notation);
+}
+
+.form-range {
+  &::-webkit-slider-thumb {
+    background: var(--stamp);
+  }
+  &::-moz-range-thumb {
+    background: var(--stamp);
+  }
+  &::-webkit-slider-runnable-track {
+    background: var(--drawer-high);
+  }
+  &::-moz-range-track {
+    background: var(--drawer-high);
+  }
+}
+
+// ── Dropdowns: a card pulled from the drawer ───────────────────
+
+.dropdown-menu {
+  --bs-dropdown-bg: var(--card);
+  --bs-dropdown-border-color: var(--control-border);
+  --bs-dropdown-link-color: var(--ink-on-card);
+  --bs-dropdown-link-hover-bg: var(--card-sunk);
+  --bs-dropdown-link-hover-color: var(--ink-on-card);
+  --bs-dropdown-link-active-bg: var(--stamp);
+  --bs-dropdown-link-active-color: #fff;
+  --bs-dropdown-header-color: var(--ink-on-card-2);
+  --bs-dropdown-divider-bg: var(--card-rule-soft);
+  border-radius: var(--radius-md);
+  box-shadow: var(--lift-card);
+
+  .form-control,
+  .form-select {
+    background-color: var(--card-bright);
+  }
+}
+
+// ── Modals: a card laid on the desk ────────────────────────────
+
+.modal-content {
+  --bs-modal-bg: var(--card);
+  --bs-modal-color: var(--ink-on-card);
+  --bs-modal-border-color: var(--control-border);
+  --bs-modal-header-border-color: var(--card-rule-soft);
+  --bs-modal-footer-border-color: var(--card-rule-soft);
+  border-radius: var(--radius-md);
+  box-shadow: var(--lift-card);
+
+  .btn-close {
+    filter: none;
+  }
+
+  .form-control,
+  .form-select {
+    background-color: var(--card-bright);
+  }
+}
+
+.modal-backdrop {
+  --bs-backdrop-bg: #140f0a;
+  --bs-backdrop-opacity: 0.72;
+}
+
+// ── Progress: the stamp filling in ─────────────────────────────
+
+.progress {
+  --bs-progress-bg: var(--drawer-deep);
+  --bs-progress-bar-bg: var(--stamp);
+  --bs-progress-border-radius: 0;
+  border: 1px solid var(--border-standard);
+}
+
+// ── Alerts ─────────────────────────────────────────────────────
+
+.alert {
+  border-radius: var(--radius-md);
+  border-width: 1px;
+}
+
+// ── Withdrawal ─────────────────────────────────────────────────
+//
+// Removing a filed label strikes it from the catalogue; it is never painted
+// in the commit colour. Red in this world means print, and only print.
+
+.withdraw {
+  color: var(--withdrawn);
+  text-decoration-color: var(--withdrawn);
+
+  &:hover,
+  &:focus-visible {
+    color: var(--ink-on-card);
+    text-decoration: line-through;
+    text-decoration-thickness: 2px;
+  }
+}

@@ -1,0 +1,32 @@
+/.vscode
+/dist
+/node_modules
+.idea
+CLAUDE.md
+
+# Capacitor / Android
+dist/
+android/.gradle/
+android/app/build/
+android/build/
+android/captures/
+android/local.properties
+*.apk
+*.aab
+*.keystore
+node_modules/
+.idea/
+.DS_Store
+
+# Local env overrides (never commit secrets)
+.env.local
+.env.*.local
+
+# Kotlin incremental build cache
+android/.kotlin/
+
+# Impeccable review captures (build artifacts, regenerated on demand)
+.impeccable/review/
+
+# Impeccable decision-page session logs
+.impeccable/questions/
