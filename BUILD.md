@@ -1,7 +1,12 @@
 # Building Labels in Action
 
-How to get from source to an installable app. Every command here was run on this machine
-and worked; where something is untested it says so.
+How to get from source to an installable app, on Android today and on iOS or as a PWA if you
+want to take it there. Every command in the Android sections was run and verified; anything
+untested is labelled as such.
+
+Paths below assume you are in the repository root. Replace `~/Library/Android/sdk` if your
+Android SDK lives elsewhere (that is the macOS default; on Linux it is usually
+`~/Android/Sdk`).
 
 - [Toolchain](#toolchain)
 - [First-time setup](#first-time-setup)
@@ -10,6 +15,7 @@ and worked; where something is untested it says so.
 - [Verify a build](#verify-a-build)
 - [Troubleshooting](#troubleshooting)
 - [iOS](#ios)
+- [PWA](#pwa)
 
 ---
 
@@ -27,28 +33,30 @@ Versions this project is known to build with:
 | Capacitor | 8.5.2 | |
 | compileSdk / minSdk | 36 / 24 | `android/variables.gradle` |
 
-**There is no system Java on this machine.** `java -version` fails and `JAVA_HOME` is empty,
-so every Gradle command must point at Android Studio's bundled runtime. This is the single
-most common reason a build dies before printing anything useful.
+You do **not** need a separately installed JDK. Android Studio bundles one (the JBR), and the
+commands below point at it explicitly. If you have no system Java — which is common, and was
+the case here — `java -version` fails, `JAVA_HOME` is empty, and Gradle dies before printing
+anything useful. Exporting `JAVA_HOME` as shown is the fix, and it is the single most common
+cause of a build that appears to do nothing.
 
 ---
 
 ## First-time setup
 
 ```bash
-cd /Users/ahmetbektes/WDesignspace/fichero-app
 npm install
 ```
 
-Then confirm `android/local.properties` points at **your** SDK:
+Then create or check `android/local.properties`, pointing at **your** SDK:
 
 ```properties
-sdk.dir=/Users/ahmetbektes/Library/Android/sdk
+sdk.dir=/Users/YOU/Library/Android/sdk
 ```
 
-This file is gitignored and machine-specific. The project was originally assembled on a Linux
-box, so a fresh copy can arrive containing `sdk.dir=/home/box/Android/Sdk`, which does not
-exist here and fails immediately.
+This file is gitignored and machine-specific, so it is normal for it to be missing on a fresh
+clone — Android Studio writes it for you when you open the project once. Watch out for a copy
+inherited from someone else's machine: this project was originally assembled on a Linux box
+and arrived holding `sdk.dir=/home/box/Android/Sdk`, which fails immediately.
 
 ---
 
@@ -57,13 +65,14 @@ exist here and fails immediately.
 Three steps: build the web assets, copy them into the Android project, assemble.
 
 ```bash
-cd /Users/ahmetbektes/WDesignspace/fichero-app
 npm run build:web
 npx cap sync android
 ```
 
 ```bash
-cd /Users/ahmetbektes/WDesignspace/fichero-app/android
+cd android
+# macOS; on Linux the JBR is under the Android Studio install dir, e.g.
+#   /opt/android-studio/jbr
 export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
 export PATH="$JAVA_HOME/bin:$PATH"
 ./gradlew assembleDebug --no-daemon
@@ -94,8 +103,10 @@ or when you suspect stale intermediates:
 
 ### Release build
 
-`assembleRelease` exists but **is unsigned and untested here** — no keystore has been created
-for this project. Signing setup is not covered in this document.
+`assembleRelease` exists but **is unsigned and untested** — no keystore has been created for
+this project, and signing setup is out of scope here. If you are shipping a release build,
+also revisit the splash screen assets: they are 2732px PNGs across 26 density folders and
+account for roughly 2.6 MB of the APK.
 
 ---
 
@@ -105,8 +116,8 @@ for this project. Signing setup is not covered in this document.
 npm run dev -- --port 5199 --strictPort
 ```
 
-Port **5199**, not Vite's default 5173, which is occupied by another project on this machine.
-`.claude/launch.json` records the same port.
+Port **5199** rather than Vite's default 5173, because 5173 was taken by another project
+during development. Any free port works; `.claude/launch.json` records this one.
 
 The dev server runs the real app in a desktop browser, which is useful for layout and for
 everything that is not Bluetooth. **Bluetooth behaves differently there** — see below.
@@ -138,8 +149,9 @@ unzip -l "$APK" | grep "assets/public/assets/"
 unzip -p "$APK" assets/public/assets/index-XXXX.js | LC_ALL=C grep -a -c requestMtu
 ```
 
-`strings` is unusable on this machine (the Xcode licence has not been accepted), which is why
-these use `unzip -p | grep -a` instead.
+These use `unzip -p | grep -a` rather than `strings` deliberately: on macOS `strings` ships
+with the Xcode command line tools and refuses to run until the Xcode licence is accepted,
+which is an unhelpful failure in the middle of a build check.
 
 ---
 
@@ -216,12 +228,17 @@ Then, in Xcode:
 3. Add the app icon and splash: `npx capacitor-assets generate --ios` uses the same
    `assets/` sources already in this repo.
 
-### What it would cost you
+### What you will need
 
-- **An Apple Developer account** to put it on a real device for more than 7 days. Free
-  provisioning works but the build expires weekly and must be reinstalled.
+- **A Mac with Xcode.** There is no way around this; iOS apps cannot be built elsewhere.
 - **A physical iPhone.** The simulator has no Bluetooth radio, so none of the printing path
   can be tested there — only layout.
+- **An Apple ID.** Free provisioning is enough to build onto your own device, but the app
+  expires after **7 days** and must be reinstalled. A paid **Apple Developer Program**
+  membership ($99/yr) removes the expiry and is required to distribute to anyone else.
+
+If you only want to run it on your own phone, free provisioning is genuinely fine — you do
+not need to pay Apple to try this.
 
 ### Known unknowns
 
@@ -233,3 +250,65 @@ Then, in Xcode:
 
 Nothing here is a blocker. The honest summary is that the protocol work is done and portable,
 and the remaining effort is Apple's provisioning ceremony plus one real device to test on.
+
+---
+
+## PWA
+
+**Short answer: worth doing, and it would cover Android and desktop without an install —
+but it can never cover iOS.** That is the exact inverse of where the native app is needed,
+which is why the two are complementary rather than alternatives.
+
+### Why it would work at all
+
+The thing that makes this app need a native wrapper on Android is that **Android System
+WebView has no Web Bluetooth** — which is what the Capgo shim exists to paper over. But
+**Chrome on Android is not WebView**, and it ships Web Bluetooth. So in a browser the app can
+talk to the printer directly, with no shim and no plugin.
+
+The code already handles this. `negotiateMtu()` in `src/lib/fichero/client.ts` branches on
+`Capacitor.isNativePlatform()`, and the non-native branch keeps the full `CHUNK_SIZE`, which
+is correct: Chrome negotiates MTU itself and enforces its own write limits. The whole MTU
+workaround is Android-WebView-specific and simply does not apply.
+
+You would also get a **better connect experience** than the native app has. The Capgo shim has
+no chooser and silently takes the first matching scan result; Chrome shows a real device
+picker.
+
+### Support, honestly
+
+| Platform | Web Bluetooth | Verdict |
+|---|---|---|
+| Chrome / Edge on Android | yes | **works, including installed to the home screen** |
+| Chrome / Edge / Opera on desktop | yes | works |
+| **Safari, and every browser on iOS** | **no** | **design only, cannot print** |
+| Firefox | no | design only |
+
+Apple has never shipped Web Bluetooth, and iOS requires every browser to use WebKit, so no
+iOS browser can print — not Chrome on iOS either. This is a platform decision, not something
+a polyfill can fix.
+
+### What is already done
+
+- `public/fichero.webmanifest` — name, theme colours, `display: standalone`
+- 192px and 512px icons, one marked `any maskable`
+- `<link rel="manifest">` in `index.html`
+- The app is already fully client-side and works offline by construction: fonts, icons and the
+  2,122-glyph icon set are all bundled, and there are no network calls at runtime
+
+### What is missing
+
+1. **A service worker.** Nothing is cached today, so there is no offline start and no install
+   prompt. `vite-plugin-pwa` would handle precaching the build output; it is not currently a
+   dependency.
+2. **HTTPS hosting.** Web Bluetooth requires a secure context. `localhost` counts for
+   development, but a deployed PWA needs a real certificate. Any static host works — the build
+   output is just files.
+
+Neither is large. The manifest and icons, usually the fiddly part, are already in place.
+
+### The catch worth knowing before you start
+
+An installed PWA and the APK would be **two separate installs with separate storage**. Saved
+labels, custom fonts and presets live in `localStorage`, so they do not travel between them.
+If you ship both, say so plainly, or people will lose work assuming they are the same app.
