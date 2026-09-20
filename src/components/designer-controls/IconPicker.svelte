@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Dropdown from "bootstrap/js/dist/dropdown";
   import { onDestroy, onMount } from "svelte";
   import { tr } from "$/utils/i18n";
   import { iconCodepoints, type MaterialIcon } from "$/styles/mdi_icons";
@@ -18,6 +19,11 @@
   let search = $state<string>("");
   let deleteMode = $state<boolean>(false);
   let dropdown: HTMLDivElement;
+  let toggleEl: HTMLButtonElement;
+
+  /** Placing an icon is one-shot: close the sheet so the card is visible.
+      Delete mode is not, so it stays open for repeated removals. */
+  const closeSheet = () => Dropdown.getOrCreateInstance(toggleEl).hide();
 
   const onShow = () => {
     if (iconNames.length === 0) {
@@ -47,6 +53,7 @@
     }
 
     onSubmitSvg(data);
+    closeSheet();
   };
 
   const iconClicked = (i: MaterialIcon) => {
@@ -55,6 +62,7 @@
     }
 
     onSubmit(i);
+    closeSheet();
   };
 
   onMount(() => {
@@ -67,7 +75,11 @@
 </script>
 
 <div class="dropdown" bind:this={dropdown}>
-  <button class="btn btn-sm btn-secondary" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+  <button
+    bind:this={toggleEl}
+    class="btn btn-sm btn-secondary"
+    data-bs-toggle="dropdown"
+    data-bs-auto-close="outside">
     <MdIcon icon="emoji_emotions" />
     <MdIcon icon="add" />
   </button>

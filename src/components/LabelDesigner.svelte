@@ -235,30 +235,42 @@
   };
 
   const zplImageReady = async (img: Blob) => {
-    await LabelDesignerObjectHelper.addImageBlob(fabricCanvas!, img);
+    revealAdded(await LabelDesignerObjectHelper.addImageBlob(fabricCanvas!, img));
+  };
+
+  /**
+   * After anything is added, hand the drawer back to the new object: select it
+   * and unpin the tab so its own tray (with Delete, Clone and its parameters)
+   * surfaces. Without this the tray stays on "Add to label" and the thing you
+   * just placed has no controls at all.
+   */
+  const revealAdded = (obj?: fabric.FabricObject) => {
+    if (obj !== undefined) {
+      fabricCanvas!.setActiveObject(obj);
+      fabricCanvas!.requestRenderAll();
+    }
+    activeTray = "none";
     undo.push(fabricCanvas!, labelProps);
   };
 
   const onObjectPicked = (objectType: OjectType) => {
     const obj = LabelDesignerObjectHelper.addObject(fabricCanvas!, objectType);
     if (obj !== undefined) {
-      fabricCanvas!.setActiveObject(obj);
-      undo.push(fabricCanvas!, labelProps);
+      revealAdded(obj);
     }
   };
 
   const onIconPicked = (i: MaterialIcon) => {
     // todo: icon is not vertically centered
-    LabelDesignerObjectHelper.addStaticText(fabricCanvas!, String.fromCodePoint(iconCodepoints[i]), {
+    const obj = LabelDesignerObjectHelper.addStaticText(fabricCanvas!, String.fromCodePoint(iconCodepoints[i]), {
       fontFamily: "Material Icons",
       fontSize: 100,
     });
-    undo.push(fabricCanvas!, labelProps);
+    revealAdded(obj);
   };
 
   const onSvgIconPicked = (i: string) => {
-    LabelDesignerObjectHelper.addSvg(fabricCanvas!, i);
-    undo.push(fabricCanvas!, labelProps);
+    LabelDesignerObjectHelper.addSvg(fabricCanvas!, i).then(revealAdded);
   };
 
   const openPreview = () => {
