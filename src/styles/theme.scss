@@ -54,8 +54,13 @@
   --fichero-subtle: var(--stamp-subtle);
   --fichero-rgb: var(--stamp-rgb);
 
-  // Withdrawn — destructive reads as struck from the catalogue, never as alarm red
+  // Withdrawn — destructive reads as struck from the catalogue, never as alarm red.
+  // This is the ink for a *filed item* being removed from a list, never for an
+  // action button: dimming a live control makes it look unavailable.
   --withdrawn: #9b8a70;
+  // The edge a destructive control takes on hover and press. Browner and
+  // darker than the stamp, so commit red still means one thing only.
+  --withdraw-edge: #8e4034;
 
   // Registration: where the printhead starts. A ruled guide, not an alarm.
   --mark-feed: var(--card-rule);
@@ -238,17 +243,22 @@ a {
   --bs-btn-disabled-color: var(--ink-muted);
 }
 
-// Withdrawn: a card struck from the catalogue. Never alarm red.
+// Destructive: reads at full strength like every other live control, and is
+// told apart by its icon and by the edge it takes on hover — not by being
+// dimmer, which is how a button says "unavailable".
 .btn-danger {
   --bs-btn-bg: var(--drawer-raised);
   --bs-btn-border-color: var(--border-standard);
-  --bs-btn-color: var(--withdrawn);
+  --bs-btn-color: var(--ink-primary);
   --bs-btn-hover-bg: var(--drawer-high);
-  --bs-btn-hover-border-color: var(--withdrawn);
+  --bs-btn-hover-border-color: var(--withdraw-edge);
   --bs-btn-hover-color: var(--ink-primary);
-  --bs-btn-active-bg: var(--drawer-high);
-  --bs-btn-active-border-color: var(--withdrawn);
-  --bs-btn-active-color: var(--ink-primary);
+  --bs-btn-active-bg: var(--withdraw-edge);
+  --bs-btn-active-border-color: var(--withdraw-edge);
+  --bs-btn-active-color: #fff;
+  --bs-btn-disabled-bg: var(--drawer);
+  --bs-btn-disabled-border-color: var(--border-soft);
+  --bs-btn-disabled-color: var(--ink-muted);
 }
 
 .btn-outline-secondary {
@@ -470,14 +480,29 @@ a {
 // Removing a filed label strikes it from the catalogue; it is never painted
 // in the commit colour. Red in this world means print, and only print.
 
+// Removing a *filed item* from a list: legible at rest, struck on hover.
 .withdraw {
-  color: var(--withdrawn);
-  text-decoration-color: var(--withdrawn);
+  color: var(--ink-on-card-2);
+  text-decoration-color: var(--withdraw-edge);
 
   &:hover,
   &:focus-visible {
-    color: var(--ink-on-card);
+    color: var(--withdraw-edge);
     text-decoration: line-through;
     text-decoration-thickness: 2px;
   }
+}
+
+// Destructive controls sitting on card stock need card ink, not kraft ink
+.dropdown-menu .btn-danger,
+.modal-content .btn-danger {
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: var(--control-border);
+  --bs-btn-color: var(--ink-on-card);
+  --bs-btn-hover-bg: var(--card-sunk);
+  --bs-btn-hover-border-color: var(--withdraw-edge);
+  --bs-btn-hover-color: var(--withdraw-edge);
+  --bs-btn-active-bg: var(--withdraw-edge);
+  --bs-btn-active-border-color: var(--withdraw-edge);
+  --bs-btn-active-color: #fff;
 }

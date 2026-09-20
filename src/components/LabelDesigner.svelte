@@ -68,6 +68,8 @@
   // and a long label does not overflow into a horizontal scroll.
   let stageW = $state<number>(0);
   let stageH = $state<number>(0);
+  let stageEl = $state<HTMLElement>();
+  let matEl = $state<HTMLElement>();
 
   // Re-read after mount: the Capgo BLE shim installs navigator.bluetooth late.
   let transports = $state({ webBluetooth: false });
@@ -78,13 +80,45 @@
   let cardZoom = $state<number>(1);
 
   const fitToStage = () => {
-    if (fabricCanvas === undefined || stageW === 0) {
+    if (fabricCanvas === undefined || stageEl === undefined || matEl === undefined || stageW === 0) {
       return;
     }
-    const availW = Math.max(80, stageW - 34);
-    const availH = Math.max(80, stageH - 120);
+
+    // Measure the real chrome rather than guessing at it: the stage and mat
+    // paddings both change at the larger breakpoints, and a hardcoded inset
+    // overflows the card into a horizontal scrollbar as soon as they do.
+    const sp = getComputedStyle(stageEl);
+    const mp = getComputedStyle(matEl);
+    const box = (s: CSSStyleDeclaration, a: string, b: string) =>
+      parseFloat(s.getPropertyValue(a)) + parseFloat(s.getPropertyValue(b));
+
+    const chromeX =
+      box(sp, "padding-left", "padding-right") +
+      box(mp, "padding-left", "padding-right") +
+      box(mp, "border-left-width", "border-right-width");
+
+    // Reserve room for what sits under the card. Measure those elements
+    // directly: deriving it from the mat's own height would be circular,
+    // since the mat's height is what this function is about to set.
+    const gap = parseFloat(sp.getPropertyValue("row-gap")) || 0;
+    let below = 0;
+    stageEl.querySelectorAll<HTMLElement>(".filing, .peek").forEach((el) => {
+      below += el.offsetHeight + gap;
+    });
+
+    const chromeY =
+      box(sp, "padding-top", "padding-bottom") +
+      box(mp, "padding-top", "padding-bottom") +
+      box(mp, "border-top-width", "border-bottom-width") +
+      below;
+
+    const availW = Math.max(80, stageW - chromeX);
+    const availH = Math.max(80, stageH - chromeY);
     const { width: lw, height: lh } = labelProps.size;
-    const zoom = Math.min(availW / lw, availH / lh, 3);
+    // A tablet has room to show the label larger; a phone does not, and an
+    // over-zoomed card there would just crowd out the controls.
+    const maxZoom = stageW >= 1000 ? 6 : stageW >= 700 ? 4.5 : 3;
+    const zoom = Math.min(availW / lw, availH / lh, maxZoom);
     fabricCanvas.virtualZoom(zoom);
     cardZoom = fabricCanvas.getVirtualZoom();
   };
@@ -518,7 +552,7 @@
   <!-- The board holds a fixed-size stage; the tray slides in over its lower
        edge so the card's position never recomputes. -->
   <div class="board">
-    <section class="stage" bind:clientWidth={stageW} bind:clientHeight={stageH}>
+    <section class="stage" bind:this={stageEl} bind:clientWidth={stageW} bind:clientHeight={stageH}>
     <div class="history">
       <button
         class="ghost"
@@ -538,7 +572,7 @@
       </button>
     </div>
 
-    <div class="mat">
+    <div class="mat" bind:this={matEl}>
       <div class="canvas-wrapper print-start-{labelProps.printDirection}" class:crisp={crispCard}>
         <canvas bind:this={htmlCanvas}></canvas>
       </div>
@@ -998,6 +1032,86 @@
   .commit .btn :global(.mdi) {
     font-size: 1.3rem;
     line-height: 1;
+  }
+
+  /* ── Larger screens ─────────────────────────────────────────
+     Phone furniture stretched across a tablet reads as a blown-up
+     phone. Constrain and centre it instead, and give the board the
+     extra room. The tray stays bottom-anchored (this is still a
+     touch device) but becomes a centred panel rather than a full
+     bleed band. Centring uses auto margins, never a transform,
+     because the drawer-pull transition owns transform. */
+
+  @media (min-width: 700px) {
+    .stage {
+      padding: 2rem 1.5rem 2.5rem;
+      gap: 0.9rem;
+    }
+
+    .history {
+      top: 0.9rem;
+      right: 1rem;
+    }
+
+    .mat {
+      padding: 0.8rem;
+    }
+
+    .filing {
+      font-size: 0.78rem;
+    }
+
+    .tray {
+      left: 0;
+      right: 0;
+      margin-inline: auto;
+      width: min(680px, 92%);
+      max-height: 52%;
+      border: 1px solid var(--control-border);
+      border-bottom: 0;
+      border-radius: var(--radius-md) var(--radius-md) 0 0;
+    }
+
+    .tray-inner {
+      padding: 0.9rem 1.1rem 1.1rem;
+    }
+
+    .tabs {
+      justify-content: center;
+      gap: 1.25rem;
+      padding: 0.5rem 1.5rem 0.65rem;
+    }
+
+    .tab-row {
+      flex: 0 1 auto;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .tab {
+      flex: 0 0 auto;
+      min-width: 5.25rem;
+      font-size: 0.78rem;
+    }
+
+    .commit .btn {
+      padding-inline: 1.4rem;
+    }
+
+    .commit-label {
+      font-size: 0.9rem;
+    }
+  }
+
+  @media (min-width: 1000px) {
+    .tray {
+      width: min(820px, 80%);
+      max-height: 46%;
+    }
+
+    .tab {
+      min-width: 6rem;
+    }
   }
 
   /* Unavailable, and it says why rather than just dimming */

@@ -18,8 +18,14 @@ onboarding for strangers, no shared-device or multi-role concerns. The user alre
 printer and the tool set, so the design optimizes for speed and reach on a phone held in one
 hand, not for teaching.
 
-Confirmed: Android phone only. Tablet and desktop web are explicitly **not** targets, so the
-inherited Bootstrap desktop grid is scaffolding to remove, not a constraint to preserve.
+Confirmed: Android phone is the primary target, and the inherited Bootstrap desktop grid was
+scaffolding to remove, not a constraint to preserve.
+
+Updated 2026-09-20: larger screens are now a secondary target at the user's request. Phone
+stays primary and drives every default; tablet and wide widths get a constrained, centred
+layout with a larger card rather than phone furniture stretched edge to edge. Breakpoints are
+700px and 1000px. Desktop web is still not a shipping target — the wide layout exists so a
+large tablet is not embarrassing, not because a browser build is planned.
 
 ## Product Purpose
 

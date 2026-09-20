@@ -181,4 +181,27 @@
   .app-menu :global(.dropdown-menu) {
     width: min(78vw, 260px);
   }
+
+  /* The drawer front spans the furniture, not the whole tabletop */
+  @media (min-width: 700px) {
+    .drawer-label {
+      padding: 0.6rem 1.5rem;
+      gap: 1rem;
+    }
+
+    .wordmark {
+      font-size: 0.9rem;
+      padding: 0 0.8rem;
+    }
+
+    .rail-end {
+      gap: 0.5rem;
+    }
+  }
+
+  @media (min-width: 1000px) {
+    .drawer-label {
+      padding-inline: 2.25rem;
+    }
+  }
 </style>
