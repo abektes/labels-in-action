@@ -71,6 +71,14 @@
   let stageEl = $state<HTMLElement>();
   let matEl = $state<HTMLElement>();
 
+  // Published to CSS so the bottom sheet can clear the tab rail. A sheet
+  // anchored to bottom:0 sits on top of the tabs, which makes the first tap
+  // land on the sheet instead of the tab you aimed at.
+  let tabsH = $state<number>(0);
+  $effect(() => {
+    document.documentElement.style.setProperty("--tabs-h", `${tabsH}px`);
+  });
+
   // Re-read after mount: the Capgo BLE shim installs navigator.bluetooth late.
   let transports = $state({ webBluetooth: false });
   onMount(() => {
@@ -493,12 +501,16 @@
     fabricCanvas.on("selection:created", (e): void => {
       selectedCount = e.selected?.length ?? 0;
       selectedObject = e.selected?.length === 1 ? e.selected[0] : undefined;
+      // Unpin whatever tab was open: selecting something means you want that
+      // thing's controls, and a pinned tab used to suppress them entirely.
+      activeTray = "none";
       editRevision++;
     });
 
     fabricCanvas.on("selection:updated", (e): void => {
       selectedCount = e.selected?.length ?? 0;
       selectedObject = e.selected?.length === 1 ? e.selected[0] : undefined;
+      activeTray = "none";
       editRevision++;
     });
 
@@ -703,7 +715,7 @@
   </div>
 
   <!-- Drawer tabs, then the one key that commits -->
-  <nav class="tabs" aria-label="Label tools">
+  <nav class="tabs" bind:offsetHeight={tabsH} aria-label="Label tools">
     <div class="tab-row">
       {#if selectedCount > 0}
         <button class="tab tab-live" class:on={objectTrayOpen} onclick={() => (activeTray = "none")}>

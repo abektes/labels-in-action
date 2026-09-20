@@ -454,7 +454,9 @@ a {
 @media (max-width: 640px) {
   .dropdown-menu.show {
     position: fixed !important;
-    inset: auto 0 0 0 !important;
+    // Clear the tab rail rather than covering it: a sheet anchored to
+    // bottom:0 swallows the first tap aimed at a tab underneath it.
+    inset: auto 0 var(--tabs-h, 0px) 0 !important;
     transform: none !important;
     width: 100% !important;
     max-width: 100% !important;
