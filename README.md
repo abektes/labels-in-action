@@ -1,9 +1,14 @@
-# Fichero Labels (Android MVP)
+# Labels in Action (LIA)
 
 Capacitor Android wrapper around the [0xMH/fichero-printer](https://github.com/0xMH/fichero-printer) web GUI (MIT) for the Fichero D11s / AiYin D11s BLE label printer.
 
-**App name:** Fichero Labels  
+**App name:** Labels in Action (short mark: LIA)  
 **Package id:** `nl.abektes.fichero`
+
+> **Building?** See **[BUILD.md](BUILD.md)** for the current, verified build procedure,
+> including the Java and SDK setup this project needs, how to verify an APK, and notes on
+> porting to iOS. The Prerequisites and First-time setup sections below are the original
+> upstream notes and are partly stale.
 
 MVP goal: install on an Android phone, pair the printer, design a simple text label, print.
 
