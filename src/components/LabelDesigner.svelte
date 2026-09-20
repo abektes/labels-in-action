@@ -135,6 +135,41 @@
     fitToStage();
   });
 
+  /**
+   * The tray scrolls, which makes it a clipping container for the dropdowns
+   * inside it. Below 640px those are restyled into bottom sheets and escape
+   * that way, but at larger widths they stay real Popper dropdowns and get
+   * cut off at the tray's edge. CSS cannot rescue them: Popper writes an
+   * inline transform measured against the offset parent, so forcing
+   * position:fixed in a stylesheet would misplace them. Give Popper the
+   * fixed strategy instead, so it measures against the viewport and the
+   * menu escapes the overflow while still flipping to stay on screen.
+   */
+  $effect(() => {
+    if (!trayOpen) {
+      return;
+    }
+
+    void activeTray;
+    void selectedObject;
+
+    void tick().then(() => {
+      document
+        .querySelectorAll<HTMLElement>('.tray [data-bs-toggle="dropdown"]')
+        .forEach((el) => {
+          if (el.dataset.ficheroFixed === "1") {
+            return;
+          }
+          Dropdown.getInstance(el)?.dispose();
+          // eslint-disable-next-line no-new
+          new Dropdown(el, {
+            popperConfig: (defaults: Record<string, unknown>) => ({ ...defaults, strategy: "fixed" }),
+          });
+          el.dataset.ficheroFixed = "1";
+        });
+    });
+  });
+
   /** The drawer pull: the tray travels its own height, in and out. */
   const drawerPull = (_node: Element, { duration = 220 }: { duration?: number } = {}) => ({
     duration: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : duration,
