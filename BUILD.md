@@ -101,6 +101,41 @@ or when you suspect stale intermediates:
 ./gradlew clean assembleDebug --no-daemon
 ```
 
+### APK size and the Scan feature
+
+The Scan tray (camera → on-device OCR / barcode → label) uses Google ML Kit, whose recognisers
+are large native libraries. How they are delivered is a build-time choice:
+
+```bash
+# Default: Play Services delivers the model. 12.4 MB.
+./gradlew assembleDebug
+
+# Embed the recognisers instead. 39.8 MB, but scans offline from first launch
+# and needs no Google Play Services.
+./gradlew assembleDebug -PficheroBundleMlkitModels=true
+```
+
+| Build | APK | First scan | Needs Play Services |
+|---|---|---|---|
+| Without the Scan feature | 7.4 MB | — | no |
+| Default (Play Services) | **12.4 MB** | downloads the model once | yes |
+| `-PficheroBundleMlkitModels=true` | **39.8 MB** | works immediately, offline | no |
+
+Two things that will otherwise cost you an afternoon:
+
+- **Measure APK size only on a clean build.** An incremental `assembleDebug` leaves tens of MB
+  of slack in the archive — a 12 MB APK reports as 39 MB. Compare
+  `stat -f%z app-debug.apk` against the sum of the zip entries; if they disagree wildly, you
+  are reading stale bytes.
+- **`abiFilters` is set to `arm64-v8a, armeabi-v7a`** in `android/app/build.gradle`. Without it
+  the native engines are packaged once per ABI and the bundled build exceeds 75 MB. x86/x86_64
+  are emulator-only; Apple Silicon emulators are arm64, so they still work. Add `x86_64` back
+  if you need an Intel emulator.
+
+The Scan feature also adds the `CAMERA` permission (declared `required="false"`, so the app
+still installs on a device without one), and pulls in proprietary Google components — see
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) before redistributing a build.
+
 ### Release build
 
 `assembleRelease` exists but **is unsigned and untested** — no keystore has been created for

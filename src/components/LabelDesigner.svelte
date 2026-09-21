@@ -28,6 +28,8 @@
   import LabelPropsEditor from "$/components/designer-controls/LabelPropsEditor.svelte";
   import MdIcon from "$/components/basic/MdIcon.svelte";
   import ObjectPicker from "$/components/designer-controls/ObjectPicker.svelte";
+  import ScanTray from "$/components/designer-controls/ScanTray.svelte";
+  import type { LabelSuggestion } from "$/lib/scan";
   import PrintPreview from "$/components/PrintPreview.svelte";
   import QrCodeParamsPanel from "$/components/designer-controls/QRCodeParamsControls.svelte";
   import TextParamsControls from "$/components/designer-controls/TextParamsControls.svelte";
@@ -53,7 +55,7 @@
 
   // Drawer trays. "none" means no tab is pinned open, which lets a live
   // selection surface its own tray without stealing a tab the user chose.
-  type TrayId = "none" | "label" | "insert" | "data" | "file";
+  type TrayId = "none" | "label" | "insert" | "scan" | "data" | "file";
   let activeTray = $state<TrayId>("none");
 
   const objectTrayOpen = $derived(selectedCount > 0 && activeTray === "none");
@@ -365,6 +367,22 @@
 
   const onSvgIconPicked = (i: string) => {
     LabelDesignerObjectHelper.addSvg(fabricCanvas!, i).then(revealAdded);
+  };
+
+  /**
+   * A scanned barcode is placed as a real barcode object so it stays scannable;
+   * anything else lands as editable text, because OCR is a first draft and the
+   * user will usually want to trim it down to fit the stock.
+   */
+  const onScanPicked = (s: LabelSuggestion) => {
+    if (s.source === "barcode") {
+      const obj = LabelDesignerObjectHelper.addBarcode(fabricCanvas!);
+      obj.set({ text: s.text });
+      fabricCanvas!.requestRenderAll();
+      revealAdded(obj);
+      return;
+    }
+    revealAdded(LabelDesignerObjectHelper.addText(fabricCanvas!, s.text));
   };
 
   const openPreview = () => {
@@ -707,6 +725,11 @@
             <ObjectPicker onSubmit={onObjectPicked} {labelProps} {zplImageReady} />
             <IconPicker onSubmit={onIconPicked} onSubmitSvg={onSvgIconPicked} />
           </div>
+        {:else if activeTray === "scan"}
+          <div class="tray-head"><span class="tray-title">Scan</span></div>
+          <div class="controls">
+            <ScanTray onPick={onScanPicked} />
+          </div>
         {:else if activeTray === "data"}
           <div class="tray-head"><span class="tray-title">Data merge</span></div>
           <div class="controls">
@@ -744,6 +767,11 @@
       <button class="tab" class:on={activeTray === "insert"} onclick={() => toggleTray("insert")}>
         <MdIcon icon="add_box" />
         <span>Add</span>
+      </button>
+
+      <button class="tab" class:on={activeTray === "scan"} onclick={() => toggleTray("scan")}>
+        <MdIcon icon="photo_camera" />
+        <span>Scan</span>
       </button>
 
       <button class="tab" class:on={activeTray === "label"} onclick={() => toggleTray("label")}>
@@ -1105,6 +1133,43 @@
      touch device) but becomes a centred panel rather than a full
      bleed band. Centring uses auto margins, never a transform,
      because the drawer-pull transition owns transform. */
+
+  /* On a phone the rail and the commit bar cannot share one line. Side by
+     side, the commit bar takes ~132px and the rail is left with 243px — too
+     narrow even for four tabs, and the overflow scrolls under a hidden
+     scrollbar, so the last tab is simply unreachable with no hint it exists.
+     Stacking gives the rail the full width: the tabs come out larger than they
+     were sharing the line, and the commit bar reads as the deliberate act it
+     is. The rail keeps the bottom edge, where the thumb rests. */
+
+  @media (max-width: 699.98px) {
+    .tabs {
+      flex-wrap: wrap;
+    }
+
+    .commit {
+      order: 1;
+      width: 100%;
+    }
+
+    .commit .btn {
+      /* Print and Connect split the bar rather than hugging the left edge. */
+      flex: 1 1 0;
+      justify-content: center;
+    }
+
+    .tab-row {
+      order: 2;
+      flex: 1 0 100%;
+    }
+
+    .tab {
+      /* Low enough that the sixth tab (the live-selection one) still fits on a
+         360px phone without scrolling; flex-grow keeps the usual five
+         comfortably wide, so this floor only binds in the selected state. */
+      min-width: 3.25rem;
+    }
+  }
 
   @media (min-width: 700px) {
     .stage {

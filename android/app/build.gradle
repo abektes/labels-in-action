@@ -10,6 +10,18 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        ndk {
+            /*
+             * ML Kit ships its OCR and barcode engines as native libraries, and
+             * without a filter they are packaged once per ABI — the OCR pipeline
+             * alone is ~11MB each. x86 and x86_64 exist only for emulators, so
+             * on a phone they are dead weight: dropping them halves the APK.
+             *
+             * Apple Silicon emulators are arm64-v8a, so this still runs there.
+             * Add 'x86_64' back if you need an Intel emulator.
+             */
+            abiFilters 'arm64-v8a', 'armeabi-v7a'
+        }
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
              // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
@@ -27,6 +39,50 @@ android {
 repositories {
     flatDir{
         dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
+    }
+}
+
+/*
+ * ML Kit sizing. Measured with clean builds (an incremental assemble leaves
+ * tens of MB of slack in the archive and will lie to you):
+ *
+ *   no scan feature at all ............................  7.4 MB
+ *   models via Play Services (default) ................ 12.4 MB
+ *   models bundled into the APK ....................... 39.8 MB
+ *
+ * Default is Play Services: the model is fetched once on first scan, so the
+ * APK stays small. Build with -PficheroBundleMlkitModels=true to embed the
+ * recognisers instead — larger, but it scans offline from the first launch and
+ * needs no Play Services, which is what you want for a de-Googled phone.
+ */
+def bundleMlkitModels = (project.findProperty('ficheroBundleMlkitModels') ?: 'false').toBoolean()
+
+configurations.configureEach {
+    /*
+     * @capacitor-mlkit/text-recognition unconditionally pulls in all five
+     * script models. Chinese, Japanese, Korean and Devanagari dominate the
+     * download, and this is a label printer for Latin-script stock.
+     *
+     * The plugin only touches those classes inside individual switch branches
+     * of TextRecognition.createRecognizerOptionsForScript, and
+     * src/lib/scan/mlkit.ts never passes a `script`, so the Latin default is
+     * the only branch taken and the excluded classes are never resolved.
+     *
+     * If you add a non-Latin script to that call, drop the matching exclude
+     * here too or the scan throws NoClassDefFoundError at that branch.
+     */
+    exclude group: 'com.google.mlkit', module: 'text-recognition-chinese'
+    exclude group: 'com.google.mlkit', module: 'text-recognition-devanagari'
+    exclude group: 'com.google.mlkit', module: 'text-recognition-japanese'
+    exclude group: 'com.google.mlkit', module: 'text-recognition-korean'
+
+    if (!bundleMlkitModels) {
+        // The unbundled play-services-mlkit-* artifacts expose the same
+        // com.google.mlkit.vision.text.latin classes the plugin imports, so
+        // dropping the bundled pair compiles unchanged and removes ~27MB of
+        // native engine (libmlkit_google_ocr_pipeline.so, libbarhopper_v3.so).
+        exclude group: 'com.google.mlkit', module: 'text-recognition'
+        exclude group: 'com.google.mlkit', module: 'barcode-scanning'
     }
 }
 

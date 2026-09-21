@@ -50,6 +50,37 @@ Per MPL-2.0 §3.2, anyone receiving a built APK can obtain the corresponding sou
 component from the upstream repository above, or from npm at the exact version pinned in
 `package-lock.json`.
 
+### Scan feature: Capacitor plugins — MIT / Apache-2.0
+
+`@capacitor/camera` (MIT), `@capacitor-mlkit/text-recognition` and
+`@capacitor-mlkit/barcode-scanning` (both Apache-2.0). Used unmodified as npm
+dependencies; the Gradle-level model selection is described in `BUILD.md`.
+
+### Scan feature: Google ML Kit — proprietary, not open source
+
+**Read this before redistributing a built APK.** The plugins above are open
+source, but the recognisers they call are not:
+
+| Component | Terms |
+|---|---|
+| `com.google.mlkit:*` | [ML Kit Terms of Service](https://developers.google.com/ml-kit/terms) |
+| `com.google.android.gms:play-services-mlkit-*` | [Android Software Development Kit License](https://developer.android.com/studio/terms.html) |
+
+Both are proprietary Google licences. Consequences worth stating plainly:
+
+- **The source in this repository is MIT. A built APK is not entirely free
+  software**, because it either embeds Google's recognition engines
+  (`libmlkit_google_ocr_pipeline.so`, `libbarhopper_v3.so`) or depends on Google
+  Play Services to deliver them.
+- Distribution channels that require fully free binaries — F-Droid most
+  obviously — will reject a build with the Scan feature enabled.
+- Nothing about this affects the designer, the BLE printing path, or the PWA
+  build. The scan tray is gated on the native platform, so the web build
+  contains none of it.
+
+If that trade is unacceptable for your fork, remove the two `@capacitor-mlkit`
+dependencies and the `scan` tray; nothing else in the app depends on them.
+
 ### Noto Sans and Noto Sans Mono — SIL Open Font License 1.1
 
 Copyright 2022 The Noto Project Authors ·
