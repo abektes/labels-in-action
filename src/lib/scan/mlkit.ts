@@ -7,6 +7,7 @@
  */
 import { Capacitor } from "@capacitor/core";
 
+import type { BarcodeCoding } from "$/fabric-object/barcode";
 import type { LabelSuggestion, ScanInput, SuggestionProvider } from "./types";
 
 /**
@@ -86,3 +87,47 @@ export const barcodeProvider: SuggestionProvider = {
 };
 
 export const onDeviceProviders: SuggestionProvider[] = [barcodeProvider, ocrProvider];
+
+/** What the canvas should place for a scanned code. */
+export type ScanPlacement =
+  | { kind: "qrcode" }
+  | { kind: "barcode"; encoding: BarcodeCoding }
+  | { kind: "text" };
+
+/** ean13() takes the 12 data digits, or all 13 with the check digit appended. */
+const EAN13_PAYLOAD = /^\d{12,13}$/;
+
+/**
+ * ML Kit recognises 13 symbologies; the canvas can draw three things (QR,
+ * EAN13, CODE128B). Pure on purpose — the placement decision is the part worth
+ * reasoning about, and it needs no canvas to do so.
+ */
+export function planScanPlacement(format: string | undefined, text: string): ScanPlacement {
+  switch (format) {
+    case "QR_CODE":
+      return { kind: "qrcode" };
+
+    case "EAN_13":
+    case "EAN_8":
+    case "UPC_A":
+    case "UPC_E":
+      // EAN_8 and UPC_E payloads are shorter than EAN13, and ean13() zero-pads
+      // a short input into a different number, so anything that is not already
+      // a full-length numeric payload goes out as CODE128B, which carries the
+      // exact digits that were scanned.
+      return EAN13_PAYLOAD.test(text) ? { kind: "barcode", encoding: "EAN13" } : { kind: "barcode", encoding: "CODE128B" };
+
+    case "CODE_128":
+    case "CODE_39":
+    case "CODE_93":
+    case "ITF":
+    case "CODABAR":
+      return { kind: "barcode", encoding: "CODE128B" };
+
+    default:
+      // AZTEC, DATA_MATRIX, PDF_417, UNKNOWN: 2D or unnamed symbologies neither
+      // canvas object can represent. Text keeps the payload; a linear barcode
+      // would quietly claim to be a code it is not.
+      return { kind: "text" };
+  }
+}

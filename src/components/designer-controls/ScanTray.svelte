@@ -7,7 +7,9 @@
     ScanCancelledError,
     capturePhoto,
     collectSuggestions,
+    onDeviceProviders,
     type LabelSuggestion,
+    type ProviderFailure,
   } from "$/lib/scan";
 
   interface Props {
@@ -20,9 +22,40 @@
 
   let phase = $state<Phase>("idle");
   let suggestions = $state<LabelSuggestion[]>([]);
+  let failures = $state<ProviderFailure[]>([]);
+  let unavailable = $state<string[]>([]);
+  let attempted = $state<string[]>([]);
   let error = $state<string | undefined>(undefined);
 
   const native = Capacitor.isNativePlatform();
+
+  /** "mlkit-barcode" is not a thing to say to a person; "Barcodes" is. */
+  const providerLabel = (id: string): string =>
+    onDeviceProviders.find((p) => p.id === id)?.label ?? id;
+
+  /**
+   * The end of a scan is three different stories, and telling the wrong one is
+   * what made this feature feel broken: a model that failed to load was
+   * reported as a badly framed photo, so the user retook the photo forever.
+   *
+   *   nothing-ran  — every provider reported isAvailable() === false
+   *   failed       — a provider ran and threw, and nothing else found anything
+   *   empty        — providers ran, finished, and the image really had nothing
+   *
+   * Results win over all three: if one provider worked, its chips are the
+   * answer and the other one's failure is a footnote.
+   */
+  type Ending = "results" | "nothing-ran" | "failed" | "empty";
+
+  const ending = $derived<Ending>(
+    suggestions.length > 0
+      ? "results"
+      : attempted.length === 0
+        ? "nothing-ran"
+        : failures.length > 0
+          ? "failed"
+          : "empty",
+  );
 
   /**
    * By default the recognisers are delivered by Play Services rather than
@@ -48,7 +81,11 @@
 
     try {
       const input = await capturePhoto(source);
-      suggestions = await collectSuggestions(input);
+      const outcome = await collectSuggestions(input);
+      suggestions = outcome.suggestions;
+      failures = outcome.failures;
+      unavailable = outcome.unavailable;
+      attempted = outcome.attempted;
       phase = "done";
     } catch (err) {
       if (err instanceof ScanCancelledError) {
@@ -64,6 +101,9 @@
 
   const reset = () => {
     suggestions = [];
+    failures = [];
+    unavailable = [];
+    attempted = [];
     error = undefined;
     phase = "idle";
   };
@@ -103,24 +143,59 @@
 
   {#if phase === "working"}
     <p class="scan-status">Reading the image&hellip;</p>
-  {:else if phase === "done" && suggestions.length === 0}
-    <p class="scan-status">
-      No text or barcodes found. Try filling more of the frame, or steadying the shot.
-    </p>
-  {:else if suggestions.length > 0}
-    <ul class="chips">
-      {#each suggestions as s, i (`${s.source}-${i}-${s.text}`)}
-        <li>
-          <button class="chip" class:is-barcode={s.source === "barcode"} onclick={() => onPick(s)}>
-            <MdIcon icon={s.source === "barcode" ? "qr_code_scanner" : "notes"} />
-            <span class="chip-text">{s.text}</span>
-            {#if s.encoding !== undefined}
-              <span class="chip-tag">{s.encoding}</span>
-            {/if}
-          </button>
-        </li>
+  {:else if phase === "done"}
+    {#if ending === "results"}
+      <ul class="chips">
+        {#each suggestions as s, i (`${s.source}-${i}-${s.text}`)}
+          <li>
+            <button class="chip" class:is-barcode={s.source === "barcode"} onclick={() => onPick(s)}>
+              <MdIcon icon={s.source === "barcode" ? "qr_code_scanner" : "notes"} />
+              <span class="chip-text">{s.text}</span>
+              {#if s.encoding !== undefined}
+                <span class="chip-tag">{s.encoding}</span>
+              {/if}
+            </button>
+          </li>
+        {/each}
+      </ul>
+    {:else if ending === "nothing-ran"}
+      <p class="scan-status">
+        <MdIcon icon="block" />
+        <span>
+          Scanning isn't available on this build: {unavailable.map(providerLabel).join(" and ")}
+          didn't load. Everything else in the designer still works.
+        </span>
+      </p>
+    {:else if ending === "failed"}
+      {#each failures as f (f.providerId)}
+        <p class="scan-error">
+          <MdIcon icon="error_outline" />
+          <span><strong>{providerLabel(f.providerId)}:</strong> {explain(f.error)}</span>
+        </p>
       {/each}
-    </ul>
+    {:else}
+      <p class="scan-status">
+        No text or barcodes found. Try filling more of the frame, or steadying the shot.
+      </p>
+    {/if}
+
+    <!-- Footnotes: true of any ending, and never loud enough to compete with it.
+         A failure that did not cost the user their results is news, not an alarm. -->
+    {#if ending === "results" && failures.length > 0}
+      {#each failures as f (f.providerId)}
+        <p class="scan-aside">
+          <MdIcon icon="info" />
+          <span>{providerLabel(f.providerId)} didn't run: {explain(f.error)}</span>
+        </p>
+      {/each}
+    {/if}
+
+    {#if ending !== "nothing-ran" && unavailable.length > 0}
+      <p class="scan-aside">
+        <MdIcon icon="block" />
+        <span>{unavailable.map(providerLabel).join(", ")} &mdash; not available on this build.</span>
+      </p>
+    {/if}
   {/if}
 {/if}
 
@@ -143,15 +218,56 @@
   }
 
   .scan-status {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.4rem;
     margin: 0.75rem 0 0;
     font-size: 0.85rem;
     color: var(--ink-muted);
   }
 
+  /* --stamp is the red for things that went genuinely wrong, so it belongs on a
+     failed provider and nowhere else in this tray. */
   .scan-error {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.4rem;
     margin: 0.75rem 0 0;
     font-size: 0.85rem;
     color: var(--stamp);
+  }
+
+  .scan-error + .scan-error {
+    margin-top: 0.35rem;
+  }
+
+  /* A footnote to an ending the user already has: quiet ink, no red, set in
+     from the results it qualifies. */
+  .scan-aside {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.4rem;
+    margin: 0.5rem 0 0;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--card-rule-soft);
+    font-size: 0.78rem;
+    color: var(--ink-tertiary);
+  }
+
+  .scan-aside + .scan-aside {
+    margin-top: 0;
+    padding-top: 0.3rem;
+    border-top: 0;
+  }
+
+  .scan-status :global(.mdi),
+  .scan-error :global(.mdi),
+  .scan-aside :global(.mdi) {
+    /* Keep the glyph on the first line of a wrapped message rather than letting
+       it grow the line box. */
+    flex: none;
+    font-size: 1.1em;
+    vertical-align: -0.15em;
   }
 
   .chips {

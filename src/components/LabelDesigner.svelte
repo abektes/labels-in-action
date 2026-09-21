@@ -30,6 +30,7 @@
   import ObjectPicker from "$/components/designer-controls/ObjectPicker.svelte";
   import ScanTray from "$/components/designer-controls/ScanTray.svelte";
   import type { LabelSuggestion } from "$/lib/scan";
+  import { planScanPlacement } from "$/lib/scan/mlkit";
   import PrintPreview from "$/components/PrintPreview.svelte";
   import QrCodeParamsPanel from "$/components/designer-controls/QRCodeParamsControls.svelte";
   import TextParamsControls from "$/components/designer-controls/TextParamsControls.svelte";
@@ -370,19 +371,46 @@
   };
 
   /**
-   * A scanned barcode is placed as a real barcode object so it stays scannable;
-   * anything else lands as editable text, because OCR is a first draft and the
-   * user will usually want to trim it down to fit the stock.
+   * A scanned code is placed as the object that actually reproduces its
+   * symbology, so it stays scannable; OCR text lands as editable text, because
+   * it is a first draft the user will usually trim down to fit the stock.
    */
-  const onScanPicked = (s: LabelSuggestion) => {
-    if (s.source === "barcode") {
-      const obj = LabelDesignerObjectHelper.addBarcode(fabricCanvas!);
-      obj.set({ text: s.text });
-      fabricCanvas!.requestRenderAll();
-      revealAdded(obj);
-      return;
+  const placeScanned = (s: LabelSuggestion): fabric.FabricObject => {
+    const canvas = fabricCanvas!;
+    const plan = s.source === "barcode" ? planScanPlacement(s.encoding, s.text) : ({ kind: "text" } as const);
+
+    if (plan.kind === "qrcode") {
+      // QRCode encodes at render time and draws its own error state, so this
+      // cannot throw here.
+      const qr = LabelDesignerObjectHelper.addQrCode(canvas);
+      qr.set({ text: s.text });
+      return qr;
     }
-    revealAdded(LabelDesignerObjectHelper.addText(fabricCanvas!, s.text));
+
+    if (plan.kind === "barcode") {
+      const barcode = LabelDesignerObjectHelper.addBarcode(canvas);
+      try {
+        // Encoding first: every set() re-encodes, and the placeholder text is
+        // only valid under the encoding it was created with.
+        barcode.set({ encoding: plan.encoding });
+        barcode.set({ text: s.text });
+        return barcode;
+      } catch (e) {
+        // A bad check digit or a character outside CODE128B throws out of the
+        // encoder. Drop the half-built object instead of leaving it on the
+        // canvas, and keep the payload as text.
+        canvas.remove(barcode);
+        console.warn("[fichero] Scanned code is not encodable as a barcode", e);
+      }
+    }
+
+    return LabelDesignerObjectHelper.addText(canvas, s.text);
+  };
+
+  const onScanPicked = (s: LabelSuggestion) => {
+    const obj = placeScanned(s);
+    fabricCanvas!.requestRenderAll();
+    revealAdded(obj);
   };
 
   const openPreview = () => {
