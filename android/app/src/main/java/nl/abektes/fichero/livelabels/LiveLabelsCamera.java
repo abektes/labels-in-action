@@ -1,14 +1,20 @@
 package nl.abektes.fichero.livelabels;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.media.Image;
+import android.net.Uri;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
+import androidx.camera.core.ImageCapture;
+import androidx.camera.core.ImageCaptureException;
 import androidx.camera.core.ImageProxy;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
@@ -18,6 +24,7 @@ import androidx.lifecycle.LifecycleOwner;
 
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
+import com.getcapacitor.PluginCall;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.objects.DetectedObject;
@@ -26,6 +33,13 @@ import com.google.mlkit.vision.objects.ObjectDetector;
 import com.google.mlkit.vision.objects.defaults.ObjectDetectorOptions;
 
 import org.json.JSONException;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * A live camera preview with per-frame object detection.
@@ -42,6 +56,16 @@ import org.json.JSONException;
  */
 class LiveLabelsCamera implements ImageAnalysis.Analyzer {
 
+    /**
+     * Long edge of the JPEG handed to the naming model. The GenAI plugin decodes
+     * whatever it is given at full resolution with no subsampling, so a 12MP
+     * capture would be a ~48MB bitmap in its process; naming a jar needs nothing
+     * like that.
+     */
+    private static final int NAMING_EDGE = 1024;
+
+    private static final int JPEG_QUALITY = 85;
+
     private final LiveLabelsPlugin plugin;
 
     @Nullable
@@ -50,6 +74,27 @@ class LiveLabelsCamera implements ImageAnalysis.Analyzer {
     private PreviewView previewView;
     @Nullable
     private ObjectDetector detector;
+    // volatile: bound and cleared on the UI thread, read on whichever thread
+    // Capacitor happens to dispatch captureFrame() from.
+    @Nullable
+    private volatile ImageCapture imageCapture;
+
+    /**
+     * Decoding and re-encoding a still takes a couple of hundred milliseconds,
+     * which is a visible stall on the main thread while the preview is live.
+     * Never shut down: a takePicture() already in flight would come back to a
+     * rejecting executor, and an executor that spawns its thread lazily costs
+     * nothing on a run that never opens the camera.
+     */
+    private final ExecutorService captureExecutor = Executors.newSingleThreadExecutor();
+
+    /**
+     * The file handed out by the previous captureFrame(). Deleted when the next
+     * one lands rather than immediately, because the WebView is still reading it
+     * while naming runs.
+     */
+    @Nullable
+    private volatile File lastFrame;
 
     private volatile boolean running = false;
 
@@ -110,12 +155,26 @@ class LiveLabelsCamera implements ImageAnalysis.Analyzer {
                             Preview preview = new Preview.Builder().build();
                             preview.setSurfaceProvider(previewView.getSurfaceProvider());
 
+                            // A third use case purely so "Name this" has a frame
+                            // to send. The analyser's own ImageProxy is not it:
+                            // holding one past analyze() to reuse later stalls a
+                            // KEEP_ONLY_LATEST pipeline, and copying every frame
+                            // just in case would cost ~13MB/s for a button that
+                            // is pressed once. Preview + ImageAnalysis +
+                            // ImageCapture is a guaranteed CameraX combination.
+                            imageCapture = new ImageCapture.Builder()
+                                // The user is pointing at a thing in real time;
+                                // a snappy frame beats a better-exposed one.
+                                .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+                                .build();
+
                             cameraProvider.unbindAll();
                             cameraProvider.bindToLifecycle(
                                 (LifecycleOwner) plugin.getActivity(),
                                 CameraSelector.DEFAULT_BACK_CAMERA,
                                 preview,
-                                analysis
+                                analysis,
+                                imageCapture
                             );
 
                             running = true;
@@ -144,9 +203,15 @@ class LiveLabelsCamera implements ImageAnalysis.Analyzer {
                     cameraProvider.unbindAll();
                     cameraProvider = null;
                 }
+                imageCapture = null;
                 if (detector != null) {
                     detector.close();
                     detector = null;
+                }
+                if (lastFrame != null) {
+                    // Best-effort: the cache dir is the OS's to reclaim anyway.
+                    lastFrame.delete();
+                    lastFrame = null;
                 }
                 if (previewView != null) {
                     ViewGroup parent = (ViewGroup) previewView.getParent();
@@ -191,6 +256,116 @@ class LiveLabelsCamera implements ImageAnalysis.Analyzer {
             // close() must happen on every path or the pipeline stalls after a
             // couple of frames and the preview freezes.
             .addOnCompleteListener(task -> imageProxy.close());
+    }
+
+    /**
+     * Freeze the frame the user is looking at and hand back a file:// URI.
+     *
+     * The whole frame, deliberately: the button asks "what is this?", not "what
+     * is inside that box", so there is no crop to get wrong. The JPEG is written
+     * already upright and already small, so the consumer can decode it naively.
+     */
+    void capture(@NonNull PluginCall call) {
+        ImageCapture capture = imageCapture;
+        if (!running || capture == null) {
+            call.reject("The live camera isn't running.");
+            return;
+        }
+
+        try {
+            capture.takePicture(
+                captureExecutor,
+                new ImageCapture.OnImageCapturedCallback() {
+                    @Override
+                    public void onCaptureSuccess(@NonNull ImageProxy image) {
+                        try {
+                            File file = writeUprightJpeg(image);
+                            if (lastFrame != null) {
+                                lastFrame.delete();
+                            }
+                            lastFrame = file;
+
+                            JSObject result = new JSObject();
+                            result.put("path", Uri.fromFile(file).toString());
+                            call.resolve(result);
+                        } catch (Exception e) {
+                            call.reject("The camera frame couldn't be saved: " + e.getMessage(), e);
+                        } finally {
+                            // Same discipline as analyze(): an ImageProxy left
+                            // open holds a buffer the capture pipeline needs.
+                            image.close();
+                        }
+                    }
+
+                    @Override
+                    public void onError(@NonNull ImageCaptureException e) {
+                        call.reject(e.getMessage() == null ? e.toString() : e.getMessage(), e);
+                    }
+                }
+            );
+        } catch (Exception e) {
+            // takePicture on a use case that was unbound between the null check
+            // and here throws synchronously. A rejected call is recoverable; an
+            // unresolved one leaves the button spinning forever.
+            call.reject(e.getMessage() == null ? e.toString() : e.getMessage(), e);
+        }
+    }
+
+    /**
+     * JPEG bytes in, a small upright JPEG on disk out.
+     *
+     * Rotation is baked into the pixels rather than left as an EXIF tag because
+     * plenty of decoders ignore the tag, and a sideways photo is a measurably
+     * worse prompt.
+     */
+    @NonNull
+    private File writeUprightJpeg(@NonNull ImageProxy image) throws IOException {
+        ByteBuffer buffer = image.getPlanes()[0].getBuffer();
+        byte[] jpeg = new byte[buffer.remaining()];
+        buffer.get(jpeg);
+
+        BitmapFactory.Options bounds = new BitmapFactory.Options();
+        bounds.inJustDecodeBounds = true;
+        BitmapFactory.decodeByteArray(jpeg, 0, jpeg.length, bounds);
+
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inSampleSize = sampleSize(Math.max(bounds.outWidth, bounds.outHeight));
+
+        Bitmap decoded = BitmapFactory.decodeByteArray(jpeg, 0, jpeg.length, options);
+        if (decoded == null) {
+            throw new IOException("The captured frame could not be decoded.");
+        }
+
+        Bitmap upright = decoded;
+        int rotation = image.getImageInfo().getRotationDegrees();
+        if (rotation != 0) {
+            Matrix matrix = new Matrix();
+            matrix.postRotate(rotation);
+            upright = Bitmap.createBitmap(
+                decoded, 0, 0, decoded.getWidth(), decoded.getHeight(), matrix, true
+            );
+            if (upright != decoded) {
+                decoded.recycle();
+            }
+        }
+
+        File file = File.createTempFile("live-frame", ".jpg", plugin.getContext().getCacheDir());
+        try (FileOutputStream out = new FileOutputStream(file)) {
+            upright.compress(Bitmap.CompressFormat.JPEG, JPEG_QUALITY, out);
+        } finally {
+            upright.recycle();
+        }
+
+        return file;
+    }
+
+    /** Largest power-of-two subsample that still leaves NAMING_EDGE to work with. */
+    private static int sampleSize(int longEdge) {
+        int sample = 1;
+        while (longEdge / (sample * 2) >= NAMING_EDGE) {
+            sample *= 2;
+        }
+        return sample;
     }
 
     static JSObject toJson(@NonNull DetectedObject object, int sourceWidth, int sourceHeight)

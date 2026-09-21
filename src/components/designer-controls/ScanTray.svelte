@@ -21,9 +21,15 @@
 
   interface Props {
     onPick: (suggestion: LabelSuggestion) => void;
+    /**
+     * Place *and* commit, from the live overlay's name chips. Separate from
+     * onPick because only the live screen collapses "pick a name" and "print
+     * it" into one tap; the photo chips below still just place.
+     */
+    onPickAndPrint: (suggestion: LabelSuggestion) => void;
   }
 
-  let { onPick }: Props = $props();
+  let { onPick, onPickAndPrint }: Props = $props();
 
   type Phase = "idle" | "working" | "done";
 
@@ -212,6 +218,7 @@
     <LiveLabelOverlay
       onClose={() => (liveOpen = false)}
       onPick={(text) => onPick({ text, source: "ai" })}
+      onPrint={(text) => onPickAndPrint({ text, source: "ai" })}
     />
   {/if}
 

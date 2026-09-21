@@ -413,6 +413,29 @@
     revealAdded(obj);
   };
 
+  /**
+   * The live camera's one-tap path: name a thing and have it come out of the
+   * printer. Placing happens either way — a tap that looks like it did nothing
+   * is the worst possible answer here — so without a printer the label is still
+   * on the canvas and the user is told what is missing rather than left
+   * guessing.
+   */
+  const onScanPickedAndPrint = async (s: LabelSuggestion) => {
+    onScanPicked(s);
+
+    // The overlay closes in this same flush, and it is what restores the
+    // WebView's background and unhides #app. Opening the preview before that
+    // lands would mount the modal inside a hidden shell.
+    await tick();
+
+    if ($connectionState === "connected") {
+      openPreviewAndPrint();
+      return;
+    }
+
+    Toasts.message(`"${s.text}" is on the label. Connect a printer to print it.`);
+  };
+
   const openPreview = () => {
     printNow = false;
     previewOpened = true;
@@ -756,7 +779,7 @@
         {:else if activeTray === "scan"}
           <div class="tray-head"><span class="tray-title">Scan</span></div>
           <div class="controls">
-            <ScanTray onPick={onScanPicked} />
+            <ScanTray onPick={onScanPicked} onPickAndPrint={onScanPickedAndPrint} />
           </div>
         {:else if activeTray === "data"}
           <div class="tray-head"><span class="tray-title">Data merge</span></div>

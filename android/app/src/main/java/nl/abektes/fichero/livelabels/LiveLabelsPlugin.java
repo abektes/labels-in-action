@@ -26,8 +26,9 @@ import java.util.List;
  *
  * Detection is deliberately the only thing done per frame. Object detection's
  * own classifier knows five coarse categories, which is not a label anyone
- * wants printed; naming is a separate, slower step the user asks for by tapping
- * a box. This class does targeting, not naming.
+ * wants printed; naming is a separate, slower step the user asks for with the
+ * "Name this" button, which captureFrame() serves. This class does targeting
+ * and capture, not naming — the model lives on the WebView side.
  */
 @CapacitorPlugin(
     name = "LiveLabels",
@@ -77,6 +78,20 @@ public class LiveLabelsPlugin extends Plugin {
         try {
             camera.start();
             call.resolve();
+        } catch (Exception e) {
+            call.reject(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * The one thing naming needs from the camera: a still of what it is looking
+     * at right now, as a file the GenAI plugin can open. Cropping to a detected
+     * box is deliberately not offered — the button asks about the scene.
+     */
+    @PluginMethod
+    public void captureFrame(PluginCall call) {
+        try {
+            camera.capture(call);
         } catch (Exception e) {
             call.reject(e.getMessage(), e);
         }

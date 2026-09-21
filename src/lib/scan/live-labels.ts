@@ -31,9 +31,20 @@ export interface ObjectsDetectedEvent {
   sourceHeight: number;
 }
 
+export interface CapturedFrame {
+  /** A file:// URI in the app cache, shaped to go straight into ScanInput.path. */
+  path: string;
+}
+
 interface LiveLabelsPlugin {
   isSupported(): Promise<{ supported: boolean }>;
   start(): Promise<void>;
+  /**
+   * Freeze the whole current frame to a cache file. Whole, not cropped: the
+   * overlay's naming button asks what the camera is pointed at, so there is no
+   * box to cut out. Rejects when the camera is not running.
+   */
+  captureFrame(): Promise<CapturedFrame>;
   stop(): Promise<void>;
   addListener(
     eventName: "objectsDetected",
