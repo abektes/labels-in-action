@@ -81,9 +81,36 @@
     onPick(text);
     onClose();
   };
+
+  /**
+   * Making the WebView transparent on the native side is only half of it: the
+   * page still paints `body { background: var(--drawer-deep) }` and the whole
+   * designer on top, so without this the camera is perfectly invisible behind
+   * an opaque app. `live-camera` blanks the shell (see style.scss).
+   *
+   * The overlay has to leave #app to survive that, hence the move to <body>.
+   * Svelte keeps its own handle on the node, so it still tears down normally.
+   */
+  const portal = (node: HTMLElement) => {
+    document.body.appendChild(node);
+    document.documentElement.classList.add("live-camera");
+
+    return {
+      destroy() {
+        document.documentElement.classList.remove("live-camera");
+        node.remove();
+      },
+    };
+  };
 </script>
 
-<div class="live" bind:this={viewEl} bind:clientWidth={viewWidth} bind:clientHeight={viewHeight}>
+<div
+  class="live"
+  use:portal
+  bind:this={viewEl}
+  bind:clientWidth={viewWidth}
+  bind:clientHeight={viewHeight}
+>
   <div class="live-bar">
     <button class="btn btn-sm btn-secondary" onclick={onClose}>
       <MdIcon icon="close" /> Close

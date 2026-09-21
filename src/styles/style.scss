@@ -33,6 +33,25 @@ body {
   min-height: 100%;
 }
 
+/* The live camera preview is a native surface sitting BEHIND the WebView, so
+   every painted pixel in the page hides it. Setting the WebView transparent
+   natively is necessary but not sufficient — the page's own background and the
+   whole designer still cover the camera completely.
+
+   LiveLabelOverlay adds this class and moves itself out to <body>, so the shell
+   can be blanked without taking the overlay with it. */
+html.live-camera,
+html.live-camera body {
+  background: transparent !important;
+}
+
+/* visibility, not display: a hidden element paints nothing, but keeps its box.
+   `display: none` would collapse the designer's layout and the Fabric canvas
+   would come back sized against a zero-width stage. */
+html.live-camera #app {
+  visibility: hidden;
+}
+
 .toastify.toast-danger {
   background: var(--bs-danger-bg-subtle);
   border: 1px solid var(--bs-danger-border-subtle);
