@@ -39,7 +39,7 @@ export PATH="$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator"
 ## First-time setup
 
 ```bash
-cd /Users/ahmetbektes/WDesignspace/fichero-app
+cd fichero-app
 npm install
 npm run build:web
 npx cap sync android

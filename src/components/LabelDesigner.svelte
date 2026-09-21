@@ -161,21 +161,38 @@
     void activeTray;
     void selectedObject;
 
+    // Bootstrap keeps instances in a strong Map keyed by element, so an
+    // instance we create outlives the element unless we dispose it. The tray
+    // is destroyed and rebuilt on every open, so without this the instances
+    // and their detached nodes accumulate for the life of the session.
+    const created: HTMLElement[] = [];
+    let cancelled = false;
+
     void tick().then(() => {
-      document
-        .querySelectorAll<HTMLElement>('.tray [data-bs-toggle="dropdown"]')
-        .forEach((el) => {
-          if (el.dataset.ficheroFixed === "1") {
-            return;
-          }
-          Dropdown.getInstance(el)?.dispose();
-          // eslint-disable-next-line no-new
-          new Dropdown(el, {
-            popperConfig: (defaults: Record<string, unknown>) => ({ ...defaults, strategy: "fixed" }),
-          });
-          el.dataset.ficheroFixed = "1";
+      if (cancelled) {
+        return;
+      }
+      document.querySelectorAll<HTMLElement>('.tray [data-bs-toggle="dropdown"]').forEach((el) => {
+        if (el.dataset.ficheroFixed === "1") {
+          return;
+        }
+        Dropdown.getInstance(el)?.dispose();
+        // eslint-disable-next-line no-new
+        new Dropdown(el, {
+          popperConfig: (defaults: Record<string, unknown>) => ({ ...defaults, strategy: "fixed" }),
         });
+        el.dataset.ficheroFixed = "1";
+        created.push(el);
+      });
     });
+
+    return () => {
+      cancelled = true;
+      created.forEach((el) => {
+        Dropdown.getInstance(el)?.dispose();
+        delete el.dataset.ficheroFixed;
+      });
+    };
   });
 
   /** The drawer pull: the tray travels its own height, in and out. */

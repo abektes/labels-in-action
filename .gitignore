@@ -30,3 +30,6 @@ android/.kotlin/
 
 # Impeccable decision-page session logs
 .impeccable/questions/
+
+# Local env (copy from .env.example); VITE_ vars are inlined into the bundle
+.env

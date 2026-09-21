@@ -14,12 +14,13 @@
  * also be enabled for discovery.
  */
 import { Capacitor } from '@capacitor/core';
+// Imported statically: ten other modules already import this, so the dynamic
+// import bought no code splitting and only earned a Rollup warning.
+import { Toasts } from '$/utils/toasts';
 
 function showBleToast(message: string): void {
   try {
-    void import('$/utils/toasts').then(({ Toasts }) => {
-      Toasts.message(message);
-    });
+    Toasts.message(message);
   } catch {
     // ignore — console already has the detail
   }
