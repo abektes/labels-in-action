@@ -107,10 +107,10 @@ The Scan tray (camera → on-device OCR / barcode → label) uses Google ML Kit,
 are large native libraries. How they are delivered is a build-time choice:
 
 ```bash
-# Default: Play Services delivers the model. 13.7 MB.
+# Default: Play Services delivers the OCR/barcode models. 27.6 MB.
 ./gradlew assembleDebug
 
-# Embed the recognisers instead. 41.2 MB, but scans offline from first launch
+# Embed the recognisers instead. 45.4 MB, but scans offline from first launch
 # and needs no Google Play Services.
 ./gradlew assembleDebug -PficheroBundleMlkitModels=true
 ```
@@ -118,8 +118,8 @@ are large native libraries. How they are delivered is a build-time choice:
 | Build | APK | First scan | Needs Play Services |
 |---|---|---|---|
 | Without the Scan feature | 7.4 MB | — | no |
-| Default (Play Services) | **13.7 MB** | downloads the model once | yes |
-| `-PficheroBundleMlkitModels=true` | **41.2 MB** | works immediately, offline | no |
+| Default (Play Services) | **27.6 MB** | downloads the OCR/barcode model once | yes |
+| `-PficheroBundleMlkitModels=true` | **45.4 MB** | works immediately, offline | no |
 
 Two things that will otherwise cost you an afternoon:
 
@@ -127,10 +127,15 @@ Two things that will otherwise cost you an afternoon:
   of slack in the archive — a 12 MB APK reports as 39 MB. Compare
   `stat -f%z app-debug.apk` against the sum of the zip entries; if they disagree wildly, you
   are reading stale bytes.
-- **`abiFilters` is set to `arm64-v8a, armeabi-v7a`** in `android/app/build.gradle`. Without it
+- **`abiFilters` is set to `arm64-v8a` only** in `android/app/build.gradle`. Without a filter
   the native engines are packaged once per ABI and the bundled build exceeds 75 MB. x86/x86_64
-  are emulator-only; Apple Silicon emulators are arm64, so they still work. Add `x86_64` back
-  if you need an Intel emulator.
+  are emulator-only (Apple Silicon emulators are arm64, so they still work), and armeabi-v7a is
+  32-bit ARM, which Google Play stopped accepting in 2019. Add either back if you need it.
+
+- **The live overlay's object detector cannot be unbundled.** There is no
+  `play-services-mlkit-object-detection`, so `libmlkitcommonpipeline.so` (~10 MB) is in every
+  build regardless of `-PficheroBundleMlkitModels`. That is the bulk of the difference between
+  the 13.7 MB this app was before the overlay and the 27.6 MB it is now.
 
 AI object naming (Gemini Nano) is not part of that choice: the model lives in Android's AICore
 system service, so `@capacitor-mlkit/genai-prompt` adds only ~1.3 MB of client classes to either
