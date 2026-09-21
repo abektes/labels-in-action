@@ -107,10 +107,10 @@ The Scan tray (camera → on-device OCR / barcode → label) uses Google ML Kit,
 are large native libraries. How they are delivered is a build-time choice:
 
 ```bash
-# Default: Play Services delivers the OCR/barcode models. 27.6 MB.
+# Default: Play Services delivers the OCR/barcode models. 50.8 MB.
 ./gradlew assembleDebug
 
-# Embed the recognisers instead. 45.4 MB, but scans offline from first launch
+# Embed the recognisers instead. 68.7 MB, but scans offline from first launch
 # and needs no Google Play Services.
 ./gradlew assembleDebug -PficheroBundleMlkitModels=true
 ```
@@ -118,8 +118,8 @@ are large native libraries. How they are delivered is a build-time choice:
 | Build | APK | First scan | Needs Play Services |
 |---|---|---|---|
 | Without the Scan feature | 7.4 MB | — | no |
-| Default (Play Services) | **27.6 MB** | downloads the OCR/barcode model once | yes |
-| `-PficheroBundleMlkitModels=true` | **45.4 MB** | works immediately, offline | no |
+| Default (Play Services) | **50.8 MB** | downloads the OCR/barcode model once | yes |
+| `-PficheroBundleMlkitModels=true` | **68.7 MB** | works immediately, offline | no |
 
 Two things that will otherwise cost you an afternoon:
 

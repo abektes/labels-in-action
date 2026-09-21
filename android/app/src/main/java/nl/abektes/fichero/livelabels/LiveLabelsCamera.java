@@ -26,11 +26,12 @@ import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.PluginCall;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.mlkit.common.model.LocalModel;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.objects.DetectedObject;
 import com.google.mlkit.vision.objects.ObjectDetection;
 import com.google.mlkit.vision.objects.ObjectDetector;
-import com.google.mlkit.vision.objects.defaults.ObjectDetectorOptions;
+import com.google.mlkit.vision.objects.custom.CustomObjectDetectorOptions;
 
 import org.json.JSONException;
 
@@ -109,13 +110,33 @@ class LiveLabelsCamera implements ImageAnalysis.Analyzer {
     void start() {
         plugin.getActivity().runOnUiThread(() -> {
             try {
-                // STREAM_MODE keeps tracking ids stable between frames, which is
-                // what stops the overlay flickering as boxes are re-identified.
+                /*
+                 * The bundled EfficientNet-Lite2 replaces ML Kit's own
+                 * classifier, which knows five categories and usually declines
+                 * to guess at all — every box read "Object". This one knows the
+                 * 1000 ImageNet classes, so boxes say "water bottle".
+                 *
+                 * STREAM_MODE keeps tracking ids stable between frames, which
+                 * is what stops the overlay flickering as boxes are
+                 * re-identified. It is also what makes a heavier classifier
+                 * affordable: ML Kit classifies a tracked object occasionally
+                 * rather than every frame, and KEEP_ONLY_LATEST drops whatever
+                 * it cannot keep up with, so this degrades to a lower rate
+                 * instead of stuttering the preview.
+                 */
+                LocalModel localModel = new LocalModel.Builder()
+                    .setAssetFilePath("efficientnet_lite2.tflite")
+                    .build();
+
                 detector = ObjectDetection.getClient(
-                    new ObjectDetectorOptions.Builder()
-                        .setDetectorMode(ObjectDetectorOptions.STREAM_MODE)
+                    new CustomObjectDetectorOptions.Builder(localModel)
+                        .setDetectorMode(CustomObjectDetectorOptions.STREAM_MODE)
                         .enableMultipleObjects()
                         .enableClassification()
+                        // Below this the label is a guess not worth printing;
+                        // the box still appears, just unnamed.
+                        .setClassificationConfidenceThreshold(0.5f)
+                        .setMaxPerObjectLabelCount(3)
                         .build()
                 );
 

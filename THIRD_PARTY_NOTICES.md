@@ -57,6 +57,16 @@ component from the upstream repository above, or from npm at the exact version p
 Apache-2.0). Used unmodified as npm dependencies; the Gradle-level model
 selection is described in `BUILD.md`.
 
+### Live overlay: EfficientNet-Lite2 — Apache-2.0
+
+`android/app/src/main/assets/efficientnet_lite2.tflite`, 23.2 MB, retrieved
+2026-09-21 from Google's MediaPipe model hosting
+(`storage.googleapis.com/mediapipe-models/image_classifier/efficientnet_lite2/float32/1/`).
+
+An ImageNet-1k image classifier, bundled unmodified and used as ML Kit's custom
+classifier so the live camera can name what it sees offline. Apache-2.0, so
+unlike the ML Kit recognisers below this one is genuinely free software.
+
 ### Scan feature: Google ML Kit — proprietary, not open source
 
 **Read this before redistributing a built APK.** The plugins above are open
