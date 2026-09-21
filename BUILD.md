@@ -31,7 +31,7 @@ Versions this project is known to build with:
 | Gradle | 8.14.3 | via the wrapper, do not install separately |
 | Android Gradle Plugin | 8.13.0 | |
 | Capacitor | 8.5.2 | |
-| compileSdk / minSdk | 36 / 24 | `android/variables.gradle` |
+| compileSdk / minSdk | 36 / 26 | `android/variables.gradle` |
 
 You do **not** need a separately installed JDK. Android Studio bundles one (the JBR), and the
 commands below point at it explicitly. If you have no system Java — which is common, and was
@@ -107,10 +107,10 @@ The Scan tray (camera → on-device OCR / barcode → label) uses Google ML Kit,
 are large native libraries. How they are delivered is a build-time choice:
 
 ```bash
-# Default: Play Services delivers the model. 12.4 MB.
+# Default: Play Services delivers the model. 13.7 MB.
 ./gradlew assembleDebug
 
-# Embed the recognisers instead. 39.8 MB, but scans offline from first launch
+# Embed the recognisers instead. 41.2 MB, but scans offline from first launch
 # and needs no Google Play Services.
 ./gradlew assembleDebug -PficheroBundleMlkitModels=true
 ```
@@ -118,8 +118,8 @@ are large native libraries. How they are delivered is a build-time choice:
 | Build | APK | First scan | Needs Play Services |
 |---|---|---|---|
 | Without the Scan feature | 7.4 MB | — | no |
-| Default (Play Services) | **12.4 MB** | downloads the model once | yes |
-| `-PficheroBundleMlkitModels=true` | **39.8 MB** | works immediately, offline | no |
+| Default (Play Services) | **13.7 MB** | downloads the model once | yes |
+| `-PficheroBundleMlkitModels=true` | **41.2 MB** | works immediately, offline | no |
 
 Two things that will otherwise cost you an afternoon:
 
@@ -131,6 +131,13 @@ Two things that will otherwise cost you an afternoon:
   the native engines are packaged once per ABI and the bundled build exceeds 75 MB. x86/x86_64
   are emulator-only; Apple Silicon emulators are arm64, so they still work. Add `x86_64` back
   if you need an Intel emulator.
+
+AI object naming (Gemini Nano) is not part of that choice: the model lives in Android's AICore
+system service, so `@capacitor-mlkit/genai-prompt` adds only ~1.3 MB of client classes to either
+build and downloads nothing at build time. Its AAR declares `minSdk 26`, which is why this project's
+`minSdkVersion` is 26 (Android 8.0) rather than Capacitor's default of 24 — the alternative was
+a manifest override plus a runtime version guard, and Android 7 predates every device that can
+run Gemini Nano anyway.
 
 The Scan feature also adds the `CAMERA` permission (declared `required="false"`, so the app
 still installs on a device without one), and pulls in proprietary Google components — see

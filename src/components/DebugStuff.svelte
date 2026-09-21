@@ -5,8 +5,8 @@
   import { tr } from "$/utils/i18n";
   import { FICHERO_CLIENT_DEFAULTS } from "$/lib/fichero";
   import {
+    allProviders,
     getScanDiagnostics,
-    onDeviceProviders,
     probeProviderAvailability,
     type ScanDiagnostics,
   } from "$/lib/scan";
@@ -27,7 +27,7 @@
     try {
       // The probe writes its answers into the diagnostics record, so the
       // snapshot taken afterwards carries fresh availability for every provider.
-      await probeProviderAvailability();
+      await probeProviderAvailability(allProviders);
     } finally {
       scan = getScanDiagnostics();
       probing = false;
@@ -91,7 +91,7 @@
     <dt>Last scan</dt>
     <dd>{stamp(scan.lastScanAt)}</dd>
 
-    {#each onDeviceProviders as p (p.id)}
+    {#each allProviders as p (p.id)}
       <dt>{p.label} <span class="mono id">{p.id}</span></dt>
       <dd>
         <div>

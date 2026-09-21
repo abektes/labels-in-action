@@ -13,11 +13,34 @@
  */
 import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
 
+import { objectNamingProvider } from "./gemini-nano";
 import { onDeviceProviders } from "./mlkit";
 import type { LabelSuggestion, ScanInput, SuggestionProvider } from "./types";
 
 export type { LabelSuggestion, ScanInput, SuggestionProvider } from "./types";
 export { onDeviceProviders } from "./mlkit";
+export {
+  checkObjectNamingStatus,
+  downloadObjectNaming,
+  objectNamingProvider,
+  type ObjectNamingStatus,
+} from "./gemini-nano";
+
+/**
+ * Every provider this build knows about, in chip order: codes, then printed
+ * text, then the model's guess at what the thing is.
+ *
+ * Not the default for collectSuggestions — that stays onDeviceProviders, which
+ * runs everywhere and needs no opt-in. Object naming is only in a scan once the
+ * tray has seen an AVAILABLE feature status, so the caller assembles the list
+ * rather than the scan discovering it.
+ */
+export const allProviders: SuggestionProvider[] = [...onDeviceProviders, objectNamingProvider];
+
+/** "mlkit-barcode" is not a thing to say to a person; "Barcodes" is. */
+export function providerLabel(id: string): string {
+  return allProviders.find((p) => p.id === id)?.label ?? id;
+}
 
 export class ScanCancelledError extends Error {
   constructor() {

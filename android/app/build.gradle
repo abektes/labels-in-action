@@ -47,8 +47,12 @@ repositories {
  * tens of MB of slack in the archive and will lie to you):
  *
  *   no scan feature at all ............................  7.4 MB
- *   models via Play Services (default) ................ 12.4 MB
- *   models bundled into the APK ....................... 39.8 MB
+ *   models via Play Services (default) ................ 13.7 MB
+ *   models bundled into the APK ....................... 41.2 MB
+ *
+ * Both figures include ~1.3 MB of genai-prompt classes for AI object naming.
+ * Gemini Nano itself is not in either: it lives in Android's AICore, so there
+ * is no bundled/unbundled choice to make for it.
  *
  * Default is Play Services: the model is fetched once on first scan, so the
  * APK stays small. Build with -PficheroBundleMlkitModels=true to embed the

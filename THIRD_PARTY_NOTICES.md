@@ -52,9 +52,10 @@ component from the upstream repository above, or from npm at the exact version p
 
 ### Scan feature: Capacitor plugins — MIT / Apache-2.0
 
-`@capacitor/camera` (MIT), `@capacitor-mlkit/text-recognition` and
-`@capacitor-mlkit/barcode-scanning` (both Apache-2.0). Used unmodified as npm
-dependencies; the Gradle-level model selection is described in `BUILD.md`.
+`@capacitor/camera` (MIT), `@capacitor-mlkit/text-recognition`,
+`@capacitor-mlkit/barcode-scanning` and `@capacitor-mlkit/genai-prompt` (all
+Apache-2.0). Used unmodified as npm dependencies; the Gradle-level model
+selection is described in `BUILD.md`.
 
 ### Scan feature: Google ML Kit — proprietary, not open source
 
@@ -65,6 +66,7 @@ source, but the recognisers they call are not:
 |---|---|
 | `com.google.mlkit:*` | [ML Kit Terms of Service](https://developers.google.com/ml-kit/terms) |
 | `com.google.android.gms:play-services-mlkit-*` | [Android Software Development Kit License](https://developer.android.com/studio/terms.html) |
+| Gemini Nano, via Android AICore | [ML Kit Terms of Service](https://developers.google.com/ml-kit/terms) · [Gemini API Additional Terms](https://ai.google.dev/gemini-api/terms) |
 
 Both are proprietary Google licences. Consequences worth stating plainly:
 
@@ -74,11 +76,16 @@ Both are proprietary Google licences. Consequences worth stating plainly:
   Play Services to deliver them.
 - Distribution channels that require fully free binaries — F-Droid most
   obviously — will reject a build with the Scan feature enabled.
+- **AI object naming adds no model to the APK** — only ~1.3 MB of
+  `com.google.mlkit:genai-prompt` client classes. The model itself is Gemini
+  Nano inside Android's AICore system service, which is proprietary Google
+  software already on the phone (or not: most phones cannot run it, and the
+  tray says so). Nothing is sent off the device either way.
 - Nothing about this affects the designer, the BLE printing path, or the PWA
   build. The scan tray is gated on the native platform, so the web build
   contains none of it.
 
-If that trade is unacceptable for your fork, remove the two `@capacitor-mlkit`
+If that trade is unacceptable for your fork, remove the three `@capacitor-mlkit`
 dependencies and the `scan` tray; nothing else in the app depends on them.
 
 ### Noto Sans and Noto Sans Mono — SIL Open Font License 1.1

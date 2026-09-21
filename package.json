@@ -15,6 +15,7 @@
 	},
 	"dependencies": {
 		"@capacitor-mlkit/barcode-scanning": "^8.2.1",
+		"@capacitor-mlkit/genai-prompt": "^8.2.1",
 		"@capacitor-mlkit/text-recognition": "^8.2.1",
 		"@capacitor/android": "^8.0.0",
 		"@capacitor/app": "^8.0.0",
