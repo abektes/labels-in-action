@@ -96,6 +96,31 @@ dependencies {
     implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
     implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
     implementation project(':capacitor-android')
+
+    /*
+     * Live label overlay (nl.abektes.fichero.livelabels). CameraX is already on
+     * the classpath via the barcode plugin, but that is `implementation` inside
+     * another module and therefore invisible here, so it is declared again.
+     * Versions track the barcode plugin's defaults to avoid two CameraX copies.
+     */
+    implementation "androidx.camera:camera-core:1.5.2"
+    implementation "androidx.camera:camera-camera2:1.5.2"
+    implementation "androidx.camera:camera-lifecycle:1.5.2"
+    implementation "androidx.camera:camera-view:1.5.2"
+    /*
+     * CameraX hands back a ListenableFuture but does not re-export the type, and
+     * com.google.guava:listenablefuture resolves to the deliberately-empty
+     * 9999.0 marker artifact, so the interface is absent at compile time.
+     *
+     * compileOnly, not implementation: the real classes already ship in the APK
+     * via the barcode plugin's own dependencies (verified against the built dex),
+     * so this needs to satisfy javac and nothing more. Adding full Guava for
+     * real would put ~2.7MB in the APK to redeclare a class already in it.
+     */
+    // Version matches the runtime graph; consistent resolution rejects any other.
+    compileOnly "com.google.guava:guava:31.0.1-jre"
+    implementation "com.google.mlkit:object-detection:17.0.2"
+
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"

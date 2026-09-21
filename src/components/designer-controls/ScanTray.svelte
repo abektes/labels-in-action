@@ -1,7 +1,9 @@
 <script lang="ts">
   import { Capacitor } from "@capacitor/core";
 
+  import LiveLabelOverlay from "$/components/designer-controls/LiveLabelOverlay.svelte";
   import MdIcon from "$/components/basic/MdIcon.svelte";
+  import { isLiveLabelsSupported } from "$/lib/scan/live-labels";
   import {
     CameraSource,
     ScanCancelledError,
@@ -33,6 +35,21 @@
   let error = $state<string | undefined>(undefined);
 
   const native = Capacitor.isNativePlatform();
+
+  /**
+   * The live overlay is a separate, heavier path: a native camera preview
+   * behind a transparent WebView. It is offered only where the plugin is
+   * actually registered, and never replaces the photo flow — that one works
+   * everywhere and is the reliable way to get text off a label.
+   */
+  let liveSupported = $state(false);
+  let liveOpen = $state(false);
+
+  $effect(() => {
+    void isLiveLabelsSupported().then((s) => {
+      liveSupported = s;
+    });
+  });
 
   /**
    * Gemini Nano lives in Android's AICore, not in this APK, so whether object
@@ -181,10 +198,22 @@
     >
       <MdIcon icon="image" /> Choose image
     </button>
+    {#if liveSupported}
+      <button class="btn btn-secondary" disabled={phase === "working"} onclick={() => (liveOpen = true)}>
+        <MdIcon icon="videocam" /> Live
+      </button>
+    {/if}
     {#if phase === "done"}
       <button class="btn btn-sm btn-link scan-reset" onclick={reset}>Clear</button>
     {/if}
   </div>
+
+  {#if liveOpen}
+    <LiveLabelOverlay
+      onClose={() => (liveOpen = false)}
+      onPick={(text) => onPick({ text, source: "ai" })}
+    />
+  {/if}
 
   <p class="scan-note">
     Nothing leaves your phone &mdash; the text{#if aiStatus === "AVAILABLE"}, barcode and object-naming
