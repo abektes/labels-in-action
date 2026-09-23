@@ -15,6 +15,8 @@
   let { show = $bindable() } = $props();
 
   let draft = $state("");
+  /** A pasted key is easiest to sanity-check by looking at it. Off by default. */
+  let reveal = $state(false);
   let busy = $state(false);
   let check = $state<KeyCheck | undefined>(undefined);
 
@@ -41,7 +43,10 @@
       check = await saveCloudKey(draft);
       // Out of the DOM as soon as it is stored: the field is the one place in
       // the web layer the key ever exists.
-      if ($cloudKeyStatus.configured) draft = "";
+      if ($cloudKeyStatus.configured) {
+        draft = "";
+        reveal = false;
+      }
     } finally {
       busy = false;
     }
@@ -93,23 +98,39 @@
         e.preventDefault();
         void save();
       }}>
-      <input
-        class="form-control form-control-sm"
-        type="password"
-        autocomplete="off"
-        autocapitalize="off"
-        spellcheck="false"
-        placeholder="sk-or-v1-…"
-        aria-label="OpenRouter API key"
-        bind:value={draft} />
-      <button class="btn btn-sm btn-secondary" type="submit" disabled={busy || draft.trim().length === 0}>
+      <div class="input-group input-group-sm">
+        <input
+          class="form-control"
+          type={reveal ? "text" : "password"}
+          autocomplete="off"
+          autocapitalize="off"
+          spellcheck="false"
+          enterkeyhint="done"
+          placeholder="sk-or-v1-…"
+          aria-label="OpenRouter API key"
+          bind:value={draft} />
+        <button
+          class="btn btn-outline-secondary reveal-key"
+          type="button"
+          aria-label={reveal ? "Hide key" : "Show key"}
+          aria-pressed={reveal}
+          onclick={() => (reveal = !reveal)}>
+          <MdIcon icon={reveal ? "visibility_off" : "visibility"} />
+        </button>
+      </div>
+      <!-- Sized for its longer label, so "Checking…" does not shrink the row. -->
+      <button
+        class="btn btn-sm btn-secondary save-key"
+        type="submit"
+        aria-busy={busy}
+        disabled={busy || draft.trim().length === 0}>
         {busy ? "Checking…" : "Save & test"}
       </button>
     </form>
   {/if}
 
   {#if check !== undefined}
-    <p class="check" class:is-bad={!check.ok}>
+    <p class="check" class:is-bad={!check.ok} role="status">
       <MdIcon icon={check.ok ? "check_circle" : "error_outline"} />
       <span>{check.message}</span>
     </p>
@@ -182,6 +203,18 @@
   .key-form {
     display: flex;
     gap: 0.4rem;
+  }
+
+  .reveal-key {
+    display: inline-flex;
+    align-items: center;
+    min-width: 44px;
+    justify-content: center;
+  }
+
+  .save-key {
+    flex: none;
+    min-width: 7.5rem;
   }
 
   .key-row {

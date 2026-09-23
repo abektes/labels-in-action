@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Capacitor } from "@capacitor/core";
 
+  import AiNamingSettings from "$/components/AiNamingSettings.svelte";
   import LiveLabelOverlay from "$/components/designer-controls/LiveLabelOverlay.svelte";
   import MdIcon from "$/components/basic/MdIcon.svelte";
   import { isLiveLabelsSupported } from "$/lib/scan/live-labels";
@@ -55,6 +56,8 @@
    */
   let liveSupported = $state(false);
   let liveOpen = $state(false);
+  /** The AI naming settings, reachable from here so a dead end has a way out. */
+  let setupOpen = $state(false);
 
   $effect(() => {
     void isLiveLabelsSupported().then((s) => {
@@ -242,7 +245,12 @@
       onClose={() => (liveOpen = false)}
       onPick={(text) => onPick({ text, source: "ai" })}
       onPrint={(text) => onPickAndPrint({ text, source: "ai" })}
+      onSetup={() => (setupOpen = true)}
     />
+  {/if}
+
+  {#if setupOpen}
+    <AiNamingSettings bind:show={setupOpen} />
   {/if}
 
   <p class="scan-note">
@@ -291,7 +299,8 @@
       <MdIcon icon="block" />
       <span>
         This phone can't run on-device AI naming. Text and barcode scanning work as usual; to name
-        objects, add an OpenRouter key in &#8943; &rarr; AI naming.
+        objects, add an OpenRouter key.
+        <button class="btn btn-link btn-sm p-0 align-baseline" onclick={() => (setupOpen = true)}>Set up</button>
       </span>
     </p>
   {/if}
@@ -319,7 +328,6 @@
               class="chip"
               class:is-barcode={s.source === "barcode"}
               class:is-ai={s.source === "ai"}
-              class:is-fun={s.fun === true}
               onclick={() => onPick(s)}
             >
               <MdIcon icon={chipIcon(s)} />
@@ -474,10 +482,24 @@
     font-size: 0.95rem;
   }
 
-  .chip:hover,
+  /* Pointer hover only: on a touchscreen a tapped chip would otherwise keep its
+     hover colour after the finger lifts. */
+  @media (hover: hover) and (pointer: fine) {
+    .chip:hover {
+      border-color: var(--card-rule);
+      background: var(--card);
+    }
+  }
+
   .chip:focus-visible {
     border-color: var(--card-rule);
     background: var(--card);
+  }
+
+  /* Instant, like the stamp key: the drawer pull is the only authored motion. */
+  .chip:active {
+    background: var(--card-sunk);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) inset;
   }
 
   .chip-text {
@@ -517,10 +539,6 @@
   .is-ai {
     padding-left: calc(0.7rem - 1px);
     border-left: 2px solid var(--ink-tertiary);
-  }
-
-  .is-fun .chip-text {
-    font-style: italic;
   }
 
   .is-barcode .chip-text {

@@ -29,9 +29,14 @@
      */
     onPrint: (text: string) => void;
     onClose: () => void;
+    /**
+     * Nothing on this phone can name things yet. The settings modal cannot open
+     * over a live camera, so the overlay closes and the caller opens it.
+     */
+    onSetup?: () => void;
   }
 
-  let { onPick, onPrint, onClose }: Props = $props();
+  let { onPick, onPrint, onClose, onSetup }: Props = $props();
 
   let objects = $state<DetectedObject[]>([]);
   let sourceWidth = $state(0);
@@ -233,11 +238,13 @@
     <button class="btn btn-sm btn-secondary" onclick={onClose}>
       <MdIcon icon="close" /> Close
     </button>
-    <span class="live-hint">
+    <span class="live-hint" role="status">
       {#if error !== undefined}
         {error}
       {:else if starting}
         Starting camera&hellip;
+      {:else if naming}
+        {fun && namer === "cloud" ? "Thinking up names…" : "Naming…"}
       {:else if names.length > 0}
         {canPrint ? "Tap a name to print it" : "Tap a name to add it to the label"}
       {:else if boxes.length === 0}
@@ -265,14 +272,22 @@
        detector reports, and losing the naming button to a transient analyser
        hiccup would be worse than showing it next to a stale message. -->
   {#if namerChecked && !starting && !canName}
-    <p class="live-setup">
+    <div class="live-setup">
       <MdIcon icon="auto_awesome" />
-      <span>To name things, add an OpenRouter key in &#8943; &rarr; AI naming.</span>
-    </p>
+      <span>Add an OpenRouter key to name what you point at.</span>
+      {#if onSetup !== undefined}
+        <button
+          class="btn btn-sm btn-secondary setup-key"
+          onclick={() => {
+            onClose();
+            onSetup();
+          }}>Set up</button>
+      {/if}
+    </div>
   {:else if canName && !starting}
     <div class="live-foot">
       {#if nameError !== undefined}
-        <p class="foot-error"><MdIcon icon="error_outline" /> <span>{nameError}</span></p>
+        <p class="foot-error" role="status"><MdIcon icon="error_outline" /> <span>{nameError}</span></p>
       {/if}
 
       {#if names.length > 0}
@@ -290,7 +305,6 @@
               <button
                 class="name"
                 class:is-print={canPrint}
-                class:is-fun={name.fun === true}
                 onclick={() => commit(name.text)}>
                 <MdIcon icon={canPrint ? "print" : "add"} />
                 <span class="name-text">{name.text}</span>
@@ -304,11 +318,15 @@
       {/if}
 
       <div class="foot-keys">
-        <button class="btn btn-secondary name-key" disabled={naming} onclick={nameThis}>
-          <MdIcon icon={fun && namer === "cloud" ? "mood" : "auto_awesome"} />
-          {#if naming}
-            {fun && namer === "cloud" ? "Thinking up names…" : "Naming…"}
-          {:else if names.length > 0}
+        <!-- The label holds still while waiting, so the Fun key beside it does
+             not slide under the thumb; the icon says it is working. -->
+        <button
+          class="btn btn-secondary name-key"
+          disabled={naming}
+          aria-busy={naming}
+          onclick={nameThis}>
+          <MdIcon icon={naming ? "hourglass_top" : fun && namer === "cloud" ? "mood" : "auto_awesome"} />
+          {#if names.length > 0}
             Name again
           {:else}
             Name this
@@ -323,7 +341,7 @@
             aria-pressed={fun}
             disabled={naming}
             onclick={toggleFun}>
-            <MdIcon icon="mood" /> Fun {fun ? "on" : "off"}
+            <MdIcon icon="mood" /> Fun
           </button>
         {/if}
       </div>
@@ -412,8 +430,17 @@
   }
 
   .foot-dismiss {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     margin-left: auto;
-    padding: 0.1rem 0.2rem;
+    /* A thumb target, not a glyph: the other hand is holding the phone up.
+       Negative margins keep the row as tall as it was. */
+    min-width: 44px;
+    min-height: 44px;
+    margin-block: -0.6rem;
+    margin-right: -0.6rem;
+    padding: 0;
     border: 0;
     background: transparent;
     color: var(--ink-secondary);
@@ -479,6 +506,14 @@
     color: var(--stamp);
   }
 
+  /* Instant, not animated: the one motion this system allows is the drawer
+     pull. The chip presses into the stock the way the stamp key does, so the
+     tap reads as heard in the moment before the screen closes. */
+  .name:active {
+    background: var(--card-sunk);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) inset;
+  }
+
   .name-text {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -492,6 +527,7 @@
   }
 
   .fun-key {
+    flex: none;
     border: 1px solid var(--card-rule-soft);
     background: rgba(36, 29, 22, 0.6);
     color: var(--ink-secondary);
@@ -521,11 +557,6 @@
     color: var(--ink-tertiary);
   }
 
-  /* A nickname is a different kind of answer; say so in the type, not a colour —
-     --stamp belongs to printing and failures. */
-  .name.is-fun .name-text {
-    font-style: italic;
-  }
 
   /* Shown where the footer would be, when nothing on this phone can name. */
   .live-setup {
@@ -534,7 +565,7 @@
     right: 0.75rem;
     bottom: calc(0.9rem + env(safe-area-inset-bottom));
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 0.4rem;
     margin: 0;
     padding: 0.5rem 0.7rem;
@@ -542,5 +573,10 @@
     background: rgba(36, 29, 22, 0.85);
     font-size: 0.8rem;
     color: var(--ink-secondary);
+  }
+
+  .setup-key {
+    flex: none;
+    margin-left: auto;
   }
 </style>
