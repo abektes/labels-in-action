@@ -6,6 +6,8 @@
   import { locale, locales, tr } from "$/utils/i18n";
   import DebugStuff from "$/components/DebugStuff.svelte";
   import MdIcon from "$/components/basic/MdIcon.svelte";
+  import AiNamingSettings from "$/components/AiNamingSettings.svelte";
+  import { Capacitor } from "@capacitor/core";
 
   // eslint-disable-next-line no-undef
   const appCommit = __APP_COMMIT__;
@@ -13,6 +15,10 @@
   const buildDate = __BUILD_DATE__;
 
   let debugStuffShow = $state<boolean>(false);
+  let aiNamingShow = $state<boolean>(false);
+
+  // Cloud naming's key store is an Android plugin; nowhere else can hold a key safely.
+  const cloudNamingSupported = Capacitor.getPlatform() === "android";
 </script>
 
 <div class="drawer">
@@ -41,6 +47,12 @@
             {/each}
           </select>
 
+          {#if cloudNamingSupported}
+            <button class="btn btn-sm btn-outline-secondary w-100 mb-2" onclick={() => (aiNamingShow = true)}>
+              <MdIcon icon="auto_awesome" /> AI naming
+            </button>
+          {/if}
+
           <button class="btn btn-sm btn-outline-secondary w-100 mb-2" onclick={() => (debugStuffShow = true)}>
             <MdIcon icon="bug_report" /> {$tr("debug.title")}
           </button>
@@ -63,6 +75,10 @@
 
   <LabelDesigner />
 </div>
+
+{#if aiNamingShow}
+  <AiNamingSettings bind:show={aiNamingShow} />
+{/if}
 
 {#if debugStuffShow}
   <DebugStuff bind:show={debugStuffShow} />
