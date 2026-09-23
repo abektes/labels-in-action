@@ -13,7 +13,19 @@
  */
 import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
 
+import { cloudNamingProvider } from "./cloud-naming";
 import { objectNamingProvider } from "./gemini-nano";
+export {
+  checkCloudKey,
+  cloudKeyStatus,
+  cloudNamingProvider,
+  nameWithCloud,
+  refreshCloudKeyStatus,
+  removeCloudKey,
+  saveCloudKey,
+  type KeyCheck,
+} from "./cloud-naming";
+export { CLOUD_MODEL_PRESETS, DEFAULT_CLOUD_MODEL, chooseNamer, type Namer } from "./cloud-naming-core";
 import { onDeviceProviders } from "./mlkit";
 import type { LabelSuggestion, ScanInput, SuggestionProvider } from "./types";
 
@@ -28,14 +40,18 @@ export {
 
 /**
  * Every provider this build knows about, in chip order: codes, then printed
- * text, then the model's guess at what the thing is.
+ * text, then the models' guesses at what the thing is — on-device first.
  *
  * Not the default for collectSuggestions — that stays onDeviceProviders, which
  * runs everywhere and needs no opt-in. Object naming is only in a scan once the
  * tray has seen an AVAILABLE feature status, so the caller assembles the list
  * rather than the scan discovering it.
  */
-export const allProviders: SuggestionProvider[] = [...onDeviceProviders, objectNamingProvider];
+export const allProviders: SuggestionProvider[] = [
+  ...onDeviceProviders,
+  objectNamingProvider,
+  cloudNamingProvider,
+];
 
 /** "mlkit-barcode" is not a thing to say to a person; "Barcodes" is. */
 export function providerLabel(id: string): string {

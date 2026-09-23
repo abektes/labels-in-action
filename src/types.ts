@@ -106,6 +106,10 @@ export const AppConfigSchema = z.object({
   pageDelay: z.number().gte(0).optional(),
   iconListMode: z.enum(["user", "pack", "both"]),
   packetIntervalMs: z.number().gte(0).optional(),
+  /** OpenRouter model id for cloud naming. The key itself is never in here. */
+  cloudModel: z.string().optional(),
+  /** Ask the cloud namer for nicknames alongside plain names. */
+  funNames: z.boolean().optional(),
 });
 
 export const UserIconSchema = z.object({
