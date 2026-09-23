@@ -6,6 +6,7 @@ import {
   chooseNamer,
   describeCloudError,
   extractMessageText,
+  isReasoningRequired,
   parseCloudReply,
 } from "./cloud-naming-core";
 
@@ -130,9 +131,28 @@ describe("buildNamingRequest", () => {
     expect(JSON.stringify(body)).toMatch(/fun nicknames/);
   });
 
+  it("lets a model that insists on reasoning think briefly, with room to answer", () => {
+    const body = buildNamingRequest({ model: "m", imageDataUrl: image, fun: true, reasoning: "light" });
+    expect(body.reasoning).toEqual({ effort: "low", exclude: true });
+    // Reasoning tokens count against max_tokens; 300 would all go on thinking.
+    expect(body.max_tokens as number).toBeGreaterThanOrEqual(1500);
+  });
+
   it("keeps plain naming cool and leaves the fun key out of the brief", () => {
     const body = buildNamingRequest({ model: "m", imageDataUrl: image, fun: false });
     expect(body.temperature).toBe(0.3);
     expect(JSON.stringify(body)).not.toMatch(/nickname/i);
+  });
+});
+
+describe("isReasoningRequired", () => {
+  it("spots the 400 a thinking-only model sends when reasoning is switched off", () => {
+    expect(isReasoningRequired(400, "Reasoning is mandatory for this endpoint and cannot be disabled.")).toBe(true);
+  });
+
+  it("ignores other 400s and other statuses", () => {
+    expect(isReasoningRequired(400, "Invalid image")).toBe(false);
+    expect(isReasoningRequired(500, "reasoning backend down")).toBe(false);
+    expect(isReasoningRequired(undefined, "reasoning")).toBe(false);
   });
 });

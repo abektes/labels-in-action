@@ -21,7 +21,9 @@ import {
   buildNamingRequest,
   describeCloudError,
   extractMessageText,
+  isReasoningRequired,
   parseCloudReply,
+  type ReasoningMode,
 } from "./cloud-naming-core";
 import type { LabelSuggestion, ScanInput, SuggestionProvider } from "./types";
 
@@ -79,9 +81,14 @@ export interface KeyCheck {
  * details kept for the debug panel via the thrown error's `cause`.
  */
 class CloudError extends Error {
+  readonly status: number | undefined;
+  readonly raw: string;
+
   constructor(status: number | undefined, raw: string) {
     super(describeCloudError(status, raw), { cause: { status, raw } });
     this.name = "CloudNamingError";
+    this.status = status;
+    this.raw = raw;
   }
 }
 
@@ -181,13 +188,39 @@ async function downscaledDataUrl(path: string): Promise<string> {
   return canvas.toDataURL("image/jpeg", 0.8);
 }
 
+/**
+ * Models that refused reasoning-off this session. Learned rather than listed:
+ * OpenRouter's model metadata does not say which models insist, and a 400 is
+ * not billed, so the cost of finding out is one quick round trip per launch.
+ */
+const needsReasoning = new Set<string>();
+
+async function complete(model: string, imageDataUrl: string, fun: boolean): Promise<string> {
+  const send = (reasoning: ReasoningMode) =>
+    call(() =>
+      CloudNaming.complete({ body: JSON.stringify(buildNamingRequest({ model, imageDataUrl, fun, reasoning })) }),
+    );
+
+  if (needsReasoning.has(model)) {
+    return send("light");
+  }
+  try {
+    return await send("off");
+  } catch (err) {
+    if (err instanceof CloudError && isReasoningRequired(err.status, err.raw)) {
+      needsReasoning.add(model);
+      return send("light");
+    }
+    throw err;
+  }
+}
+
 /** Fun chips first when there are any: they are why the user flipped the switch. */
 export async function nameWithCloud(path: string, fun: boolean): Promise<LabelSuggestion[]> {
   const model = get(appConfig).cloudModel?.trim() || DEFAULT_CLOUD_MODEL;
   const imageDataUrl = await downscaledDataUrl(path);
-  const body = JSON.stringify(buildNamingRequest({ model, imageDataUrl, fun }));
 
-  const raw = await call(() => CloudNaming.complete({ body }));
+  const raw = await complete(model, imageDataUrl, fun);
 
   let response: unknown;
   try {

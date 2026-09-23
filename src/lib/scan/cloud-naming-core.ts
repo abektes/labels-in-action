@@ -9,14 +9,25 @@ import { parseLabelOptions } from "./gemini-nano";
 export const DEFAULT_CLOUD_MODEL = "z-ai/glm-5.3-flash";
 
 /**
- * Both are vision-capable flash models the user already has on OpenRouter.
- * Anything else can be typed in the settings, so this list is a shortcut, not
- * a whitelist.
+ * Vision-capable models that answer in about a second. Prices are OpenRouter's
+ * per million tokens (in / out) as of 2026-09; one name costs roughly 1,000
+ * tokens in and 100 out, so every one of these is well under a tenth of a cent.
+ * Anything else can be typed in the settings: a shortcut, not a whitelist.
  */
 export const CLOUD_MODEL_PRESETS: { id: string; label: string }[] = [
-  { id: DEFAULT_CLOUD_MODEL, label: "GLM 5.3 Flash" },
-  { id: "deepseek/deepseek-v4.1-flash", label: "DeepSeek V4.1 Flash" },
+  { id: DEFAULT_CLOUD_MODEL, label: "GLM 5.3 Flash · $0.15 / $0.50" },
+  { id: "google/gemma-3-12b-it", label: "Gemma 3 12B · $0.05 / $0.15, no thinking" },
+  { id: "qwen/qwen3.7-flash", label: "Qwen 3.7 Flash · $0.03 / $0.13" },
+  { id: "deepseek/deepseek-v4.1-flash", label: "DeepSeek V4.1 Flash · $0.15 / $0.60" },
 ];
+
+/**
+ * "off" is what every request tries first: six short names do not need a chain
+ * of thought, and flash models that think spend the budget on it. Some models
+ * refuse to switch it off (GLM 5.3 Flash answers 400), so they get "light":
+ * brief thinking, hidden from the reply, with room left to actually answer.
+ */
+export type ReasoningMode = "off" | "light";
 
 /**
  * A 40x12mm label at a readable size holds about this many characters. A
@@ -55,7 +66,9 @@ export function buildNamingRequest(opts: {
   model: string;
   imageDataUrl: string;
   fun: boolean;
+  reasoning?: ReasoningMode;
 }): Record<string, unknown> {
+  const light = opts.reasoning === "light";
   const shape = opts.fun
     ? `Reply with only JSON: {"plain": [${PLAIN_COUNT_WITH_FUN} names], "fun": [${FUN_COUNT} nicknames]}`
     : `Reply with only JSON: {"plain": [${PLAIN_COUNT_ALONE} names]}`;
@@ -75,10 +88,10 @@ export function buildNamingRequest(opts: {
     ],
     // Plain naming wants the obvious word; jokes need some room to wander.
     temperature: opts.fun ? 1 : 0.3,
-    // Flash models that think first would spend this budget on thinking and
-    // return nothing. Six short names do not need a chain of thought.
-    reasoning: { enabled: false },
-    max_tokens: 300,
+    reasoning: light ? { effort: "low", exclude: true } : { enabled: false },
+    // Reasoning tokens count against max_tokens. 300 is plenty for the names
+    // alone and would be eaten whole by even a short think.
+    max_tokens: light ? 2000 : 300,
   };
 }
 
@@ -197,6 +210,11 @@ export function describeCloudError(status: number | undefined, message: string):
     default:
       return `OpenRouter error ${status}: ${message}`;
   }
+}
+
+/** The 400 a thinking-only model sends back when a request switches reasoning off. */
+export function isReasoningRequired(status: number | undefined, message: string): boolean {
+  return status === 400 && /reason/i.test(message);
 }
 
 export type Namer = "nano" | "cloud" | "none";
