@@ -144,6 +144,14 @@ build and downloads nothing at build time. Its AAR declares `minSdk 26`, which i
 a manifest override plus a runtime version guard, and Android 7 predates every device that can
 run Gemini Nano anyway.
 
+Cloud naming (and its "fun names" nicknames) uses the **user's own OpenRouter key**, pasted in
+**⋯ → AI naming** at runtime. No key is ever part of a build — this repo is public, and anything
+in an APK can be extracted. The app-local `CloudNaming` plugin
+(`android/app/src/main/java/nl/abektes/fichero/cloudnaming`) encrypts the key under an Android
+Keystore key, keeps the ciphertext in a prefs file excluded from backup
+(`res/xml/backup_rules.xml`, `data_extraction_rules.xml`), and makes the HTTP calls itself, so
+the key never enters the WebView. Unit tests for the prompt and reply parsing: `npm test`.
+
 The Scan feature also adds the `CAMERA` permission (declared `required="false"`, so the app
 still installs on a device without one), and pulls in proprietary Google components — see
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) before redistributing a build.
