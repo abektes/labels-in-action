@@ -30,6 +30,11 @@ export interface LabelSuggestion {
   encoding?: string;
   /** 0..1, only where a provider actually reports one. ML Kit does not. */
   confidence?: number;
+  /**
+   * A nickname rather than a name ("Sir Drips-a-Lot", not "Kettle"). Only the
+   * cloud namer makes these, and only when fun names are switched on.
+   */
+  fun?: boolean;
 }
 
 export interface ScanInput {
