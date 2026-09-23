@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 11 and older. The encrypted OpenRouter key stays on this phone:
+     its Keystore key cannot follow it, so a restored copy would be dead weight. -->
+<full-backup-content>
+    <exclude domain="sharedpref" path="lia_secrets.xml" />
+</full-backup-content>
