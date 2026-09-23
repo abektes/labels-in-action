@@ -2,14 +2,22 @@
   import type { PluginListenerHandle } from "@capacitor/core";
 
   import MdIcon from "$/components/basic/MdIcon.svelte";
-  import { checkObjectNamingStatus, objectNamingProvider } from "$/lib/scan";
+  import {
+    checkObjectNamingStatus,
+    chooseNamer,
+    cloudKeyStatus,
+    nameWithCloud,
+    objectNamingProvider,
+    refreshCloudKeyStatus,
+    type LabelSuggestion,
+  } from "$/lib/scan";
   import {
     LiveLabels,
     bestLabel,
     projectOntoPreview,
     type DetectedObject,
   } from "$/lib/scan/live-labels";
-  import { connectionState } from "$/stores";
+  import { appConfig, connectionState } from "$/stores";
 
   interface Props {
     /** Called with the chosen text; the overlay closes itself first. */
@@ -40,10 +48,18 @@
   const canPrint = $derived($connectionState === "connected");
 
   // Naming is the slow, opt-in half of this screen: a frame grab, then one to
-  // three seconds inside AICore.
-  let canName = $state(false);
+  // three seconds inside AICore or a round trip to OpenRouter.
+  let nanoAvailable = $state(false);
+  let namerChecked = $state(false);
   let naming = $state(false);
-  let names = $state<string[]>([]);
+  let names = $state<LabelSuggestion[]>([]);
+
+  const fun = $derived($appConfig.funNames ?? false);
+  const keyConfigured = $derived($cloudKeyStatus.configured);
+  const namer = $derived(chooseNamer({ fun, nanoAvailable, keyConfigured }));
+  const canName = $derived(namer !== "none");
+  /** Fun is a cloud feature, so the toggle only exists once there is a key. */
+  const canFun = $derived(keyConfigured);
   let nameError = $state<string | undefined>(undefined);
 
   /**
@@ -100,8 +116,11 @@
       // is the point of the screen. A phone that cannot run the model simply
       // never grows the button, and a status check that goes wrong must not be
       // reported as a camera fault.
-      const status = await checkObjectNamingStatus();
-      if (!cancelled) canName = status === "AVAILABLE";
+      const [status] = await Promise.all([checkObjectNamingStatus(), refreshCloudKeyStatus()]);
+      if (!cancelled) {
+        nanoAvailable = status === "AVAILABLE";
+        namerChecked = true;
+      }
     };
 
     void run();
@@ -141,10 +160,11 @@
 
     try {
       const { path } = await LiveLabels.captureFrame();
-      const suggestions = await objectNamingProvider.suggest({ path });
+      const suggestions =
+        namer === "cloud" ? await nameWithCloud(path, fun) : await objectNamingProvider.suggest({ path });
       if (torn) return;
 
-      names = suggestions.map((s) => s.text);
+      names = suggestions;
       if (names.length === 0) {
         nameError = "Couldn't name that. Fill more of the frame and try again.";
       }
@@ -155,12 +175,24 @@
       const raw = err instanceof Error ? err.message : String(err);
       // Never left silent: the camera is still running and looks fine, so an
       // unexplained tap reads as a dead button rather than a failed model.
-      nameError = /download|unavailable|not available/i.test(raw)
-        ? "The AI naming model isn't ready on this phone yet."
-        : `Naming failed: ${raw}`;
+      // Cloud errors arrive already worded for a person.
+      nameError =
+        namer === "cloud"
+          ? raw
+          : /download|unavailable|not available/i.test(raw)
+            ? "The AI naming model isn't ready on this phone yet."
+            : `Naming failed: ${raw}`;
     } finally {
       naming = false;
     }
+  };
+
+  const toggleFun = () => {
+    $appConfig.funNames = !fun;
+    // The names on screen were asked for in the other mode; keeping them would
+    // make the switch look like it did nothing.
+    names = [];
+    nameError = undefined;
   };
 
   const dismissNames = () => {
@@ -232,7 +264,12 @@
   <!-- Not gated on `error`: that one latches on any single bad frame the
        detector reports, and losing the naming button to a transient analyser
        hiccup would be worse than showing it next to a stale message. -->
-  {#if canName && !starting}
+  {#if namerChecked && !starting && !canName}
+    <p class="live-setup">
+      <MdIcon icon="auto_awesome" />
+      <span>To name things, add an OpenRouter key in &#8943; &rarr; AI naming.</span>
+    </p>
+  {:else if canName && !starting}
     <div class="live-foot">
       {#if nameError !== undefined}
         <p class="foot-error"><MdIcon icon="error_outline" /> <span>{nameError}</span></p>
@@ -248,27 +285,51 @@
           </button>
         </div>
         <ul class="names">
-          {#each names as name (name)}
+          {#each names as name (name.text)}
             <li>
-              <button class="name" class:is-print={canPrint} onclick={() => commit(name)}>
+              <button
+                class="name"
+                class:is-print={canPrint}
+                class:is-fun={name.fun === true}
+                onclick={() => commit(name.text)}>
                 <MdIcon icon={canPrint ? "print" : "add"} />
-                <span class="name-text">{name}</span>
+                <span class="name-text">{name.text}</span>
+                {#if name.fun}
+                  <span class="name-tag"><MdIcon icon="mood" /> Fun</span>
+                {/if}
               </button>
             </li>
           {/each}
         </ul>
       {/if}
 
-      <button class="btn btn-secondary name-key" disabled={naming} onclick={nameThis}>
-        <MdIcon icon="auto_awesome" />
-        {#if naming}
-          Naming&hellip;
-        {:else if names.length > 0}
-          Name again
-        {:else}
-          Name this
+      <div class="foot-keys">
+        <button class="btn btn-secondary name-key" disabled={naming} onclick={nameThis}>
+          <MdIcon icon={fun && namer === "cloud" ? "mood" : "auto_awesome"} />
+          {#if naming}
+            {fun && namer === "cloud" ? "Thinking up names…" : "Naming…"}
+          {:else if names.length > 0}
+            Name again
+          {:else}
+            Name this
+          {/if}
+        </button>
+        {#if canFun}
+          <!-- A toggle, not a mode screen: flipping it is the whole setting, and
+               it persists, so the next "Name this" already knows. -->
+          <button
+            class="btn fun-key"
+            class:is-on={fun}
+            aria-pressed={fun}
+            disabled={naming}
+            onclick={toggleFun}>
+            <MdIcon icon="mood" /> Fun {fun ? "on" : "off"}
+          </button>
         {/if}
-      </button>
+      </div>
+      {#if namer === "cloud"}
+        <p class="foot-note">Sends this frame to OpenRouter.</p>
+      {/if}
     </div>
   {/if}
 </div>
@@ -424,7 +485,62 @@
     white-space: nowrap;
   }
 
-  .name-key {
-    align-self: flex-start;
+  .foot-keys {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .fun-key {
+    border: 1px solid var(--card-rule-soft);
+    background: rgba(36, 29, 22, 0.6);
+    color: var(--ink-secondary);
+  }
+
+  /* On reads as card stock, same as the chips it changes. */
+  .fun-key.is-on {
+    background: var(--card-bright);
+    color: var(--ink-on-card);
+  }
+
+  .foot-note {
+    margin: 0;
+    font-size: 0.72rem;
+    color: var(--ink-tertiary);
+  }
+
+  .name-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    margin-left: auto;
+    flex: none;
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-tertiary);
+  }
+
+  /* A nickname is a different kind of answer; say so in the type, not a colour —
+     --stamp belongs to printing and failures. */
+  .name.is-fun .name-text {
+    font-style: italic;
+  }
+
+  /* Shown where the footer would be, when nothing on this phone can name. */
+  .live-setup {
+    position: absolute;
+    left: 0.75rem;
+    right: 0.75rem;
+    bottom: calc(0.9rem + env(safe-area-inset-bottom));
+    display: flex;
+    align-items: flex-start;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0.5rem 0.7rem;
+    border-radius: var(--radius-sm, 0.3rem);
+    background: rgba(36, 29, 22, 0.85);
+    font-size: 0.8rem;
+    color: var(--ink-secondary);
   }
 </style>
