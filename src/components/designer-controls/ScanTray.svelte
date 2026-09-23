@@ -4,12 +4,17 @@
   import LiveLabelOverlay from "$/components/designer-controls/LiveLabelOverlay.svelte";
   import MdIcon from "$/components/basic/MdIcon.svelte";
   import { isLiveLabelsSupported } from "$/lib/scan/live-labels";
+  import { appConfig } from "$/stores";
   import {
     CameraSource,
     ScanCancelledError,
-    allProviders,
     capturePhoto,
     checkObjectNamingStatus,
+    chooseNamer,
+    cloudKeyStatus,
+    cloudNamingProvider,
+    objectNamingProvider,
+    refreshCloudKeyStatus,
     collectSuggestions,
     downloadObjectNaming,
     onDeviceProviders,
@@ -73,11 +78,29 @@
 
   if (native) {
     void refreshAiStatus();
+    void refreshCloudKeyStatus();
   }
 
-  // Object naming joins a scan only once the model is actually on the phone.
-  // Every other status leaves the existing OCR + barcode pair exactly as it was.
-  const providers = $derived(aiStatus === "AVAILABLE" ? allProviders : onDeviceProviders);
+  /**
+   * At most one namer per scan, chosen by the same rule as the live screen:
+   * Nano when it can do the job, the user's OpenRouter key when it cannot or
+   * when fun names are on. Neither leaves the OCR + barcode pair as it was.
+   */
+  const namer = $derived(
+    chooseNamer({
+      fun: $appConfig.funNames ?? false,
+      nanoAvailable: aiStatus === "AVAILABLE",
+      keyConfigured: $cloudKeyStatus.configured,
+    }),
+  );
+  const providers = $derived(
+    namer === "nano"
+      ? [...onDeviceProviders, objectNamingProvider]
+      : namer === "cloud"
+        ? [...onDeviceProviders, cloudNamingProvider]
+        : onDeviceProviders,
+  );
+  const cloudInRun = $derived(namer === "cloud");
 
   const enableAi = async () => {
     aiError = undefined;
@@ -104,8 +127,8 @@
   const megabytes = (bytes: number): string => `${(bytes / 1048576).toFixed(0)} MB`;
 
   /** Encoded on the object, printed on it, or guessed about it. */
-  const chipIcon = (source: LabelSuggestion["source"]) =>
-    source === "barcode" ? "qr_code_scanner" : source === "ai" ? "auto_awesome" : "notes";
+  const chipIcon = (s: LabelSuggestion) =>
+    s.fun ? "mood" : s.source === "barcode" ? "qr_code_scanner" : s.source === "ai" ? "auto_awesome" : "notes";
 
   /**
    * The end of a scan is three different stories, and telling the wrong one is
@@ -223,8 +246,13 @@
   {/if}
 
   <p class="scan-note">
-    Nothing leaves your phone &mdash; the text{#if aiStatus === "AVAILABLE"}, barcode and object-naming
-      models{:else} and barcode models{/if} run locally.
+    {#if cloudInRun}
+      Text and barcodes are read on your phone; the photo is sent to OpenRouter for names{#if $appConfig.funNames}
+        and nicknames{/if}.
+    {:else}
+      Nothing leaves your phone &mdash; the text{#if namer === "nano"}, barcode and object-naming
+        models{:else} and barcode models{/if} run locally.
+    {/if}
   </p>
 
   <!-- Four statuses, four honest answers. AVAILABLE says nothing extra: the AI
@@ -258,10 +286,13 @@
         appear once it lands.
       </span>
     </p>
-  {:else if aiStatus === "UNAVAILABLE"}
+  {:else if aiStatus === "UNAVAILABLE" && !$cloudKeyStatus.configured}
     <p class="scan-aside">
       <MdIcon icon="block" />
-      <span>This phone can't run on-device AI naming. Text and barcode scanning work as usual.</span>
+      <span>
+        This phone can't run on-device AI naming. Text and barcode scanning work as usual; to name
+        objects, add an OpenRouter key in &#8943; &rarr; AI naming.
+      </span>
     </p>
   {/if}
 
@@ -277,9 +308,7 @@
     <!-- Nano inference takes seconds, which is long enough that silence reads
          as a hang. Only promised when it is actually in the run. -->
     <p class="scan-status">
-      {aiStatus === "AVAILABLE"
-        ? "Reading the image and naming what's in it…"
-        : "Reading the image…"}
+      {namer !== "none" ? "Reading the image and naming what's in it…" : "Reading the image…"}
     </p>
   {:else if phase === "done"}
     {#if ending === "results"}
@@ -290,12 +319,15 @@
               class="chip"
               class:is-barcode={s.source === "barcode"}
               class:is-ai={s.source === "ai"}
+              class:is-fun={s.fun === true}
               onclick={() => onPick(s)}
             >
-              <MdIcon icon={chipIcon(s.source)} />
+              <MdIcon icon={chipIcon(s)} />
               <span class="chip-text">{s.text}</span>
               {#if s.encoding !== undefined}
                 <span class="chip-tag">{s.encoding}</span>
+              {:else if s.fun}
+                <span class="chip-tag">Fun</span>
               {:else if s.source === "ai"}
                 <!-- A guess at what the thing is, not something read off it.
                      Worth saying on the chip itself, once. -->
@@ -322,7 +354,7 @@
       {/each}
     {:else}
       <p class="scan-status">
-        {attempted.includes("genai-object-naming")
+        {attempted.includes("genai-object-naming") || attempted.includes("cloud-naming")
           ? "Nothing to name here. Try filling more of the frame, or steadying the shot."
           : "No text or barcodes found. Try filling more of the frame, or steadying the shot."}
       </p>
@@ -485,6 +517,10 @@
   .is-ai {
     padding-left: calc(0.7rem - 1px);
     border-left: 2px solid var(--ink-tertiary);
+  }
+
+  .is-fun .chip-text {
+    font-style: italic;
   }
 
   .is-barcode .chip-text {
