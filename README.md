@@ -1,117 +1,83 @@
-# Labels in Action (LIA)
+# Labels in Action
 
-Capacitor Android wrapper around the [0xMH/fichero-printer](https://github.com/0xMH/fichero-printer) web GUI (MIT) for the Fichero D11s / AiYin D11s BLE label printer.
+Design a label on your phone and print it to a **Fichero D11s** (also sold as the AiYin D11s)
+Bluetooth thermal label printer. Or point the camera at something and print its name.
 
-**App name:** Labels in Action (short mark: LIA)  
-**Package id:** `nl.abektes.fichero`
+Labels in Action (LIA) is an Android app built with Capacitor around a Svelte + Fabric.js
+label designer. The same build also runs as an installable web app in Chrome.
 
-> **Building?** See **[BUILD.md](BUILD.md)** for the current, verified build procedure,
-> including the Java and SDK setup this project needs, how to verify an APK, and notes on
-> porting to iOS. The Prerequisites and First-time setup sections below are the original
-> upstream notes and are partly stale.
+## Features
 
-MVP goal: install on an Android phone, pair the printer, design a simple text label, print.
+- **Label designer** for text, QR codes, barcodes, icons, images and shapes, with undo/redo,
+  label size presets, saved labels, custom fonts and CSV-driven batch printing.
+- **Direct Bluetooth printing** to the D11s, with MTU-aware chunking so Android's WebView
+  prints reliably.
+- **Scan to label.** On-device OCR and barcode reading (Google ML Kit) turn a photo into a
+  label. A live camera overlay frames objects; tap one to name it and print.
+- **Optional AI naming.** On-device Gemini Nano where the phone supports it. Otherwise you
+  can use your own [OpenRouter](https://openrouter.ai) key, which is stored encrypted in the
+  Android Keystore and never leaves the native layer. Photos go to the cloud only after you
+  add a key.
+- **Works offline.** Everything except cloud naming runs on the phone, and the PWA build
+  installs from Chrome on Android and desktop. The designer is translated into 18 languages;
+  the newer scan and AI screens are English only for now.
 
-## Prerequisites (Mac)
+## Quick start (Android)
 
-- Node.js **22+** (Capacitor 8 CLI requirement)
-- npm 10+
-- [Android Studio](https://developer.android.com/studio) (Ladybug/Meerkat or newer is fine)
-- Android SDK with:
-  - Android SDK Platform **35** (or whatever `android/variables.gradle` / AGP asks for)
-  - Android SDK Build-Tools
-  - A device or emulator; **physical phone recommended for BLE**
-- On the phone: enable **Developer options** + **USB debugging** (for `adb install` / Android Studio Run)
-
-```bash
-node -v   # should be v22+
-java -version
-echo $ANDROID_HOME
-```
-
-Typical Mac paths after Android Studio install:
+You need Node 22+ and Android Studio installed once (for its bundled JDK and the Android
+SDK). Then, with a phone plugged in and USB debugging on:
 
 ```bash
-export ANDROID_HOME="$HOME/Library/Android/sdk"
-export PATH="$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator"
+npm ci
+scripts/android.sh doctor    # checks the toolchain and lists devices
+scripts/android.sh run       # builds, installs and launches the app
 ```
 
-## First-time setup
+No `JAVA_HOME` or `ANDROID_HOME` setup is needed; the script finds Android Studio's JDK and
+your SDK. Run `scripts/android.sh` with no arguments for the other commands (`logs`,
+`emulator`, `verify`, …). The emulator runs the designer, but it has no Bluetooth, so printing
+needs a real phone.
+
+Prefer Android Studio? `npm run cap:sync && npm run cap:open`, then press Run.
+
+**First print:** switch the printer on, open the app, allow *Nearby devices* when asked, tap
+the Bluetooth button, design something and print. The app connects to the first D11s it finds,
+so keep only one printer powered on nearby.
+
+## Web / PWA
 
 ```bash
-cd fichero-app
-npm install
-npm run build:web
-npx cap sync android
+npm run dev          # http://localhost:5199
+npm run build:web    # static PWA in dist/; serve over HTTPS
 ```
 
-Open the native project:
+Printing from a browser needs Web Bluetooth: Chrome or Edge on Android or desktop. Safari,
+iOS browsers and Firefox can design labels but cannot print.
 
-```bash
-npx cap open android
-# or: open -a "Android Studio" android
-```
+## Documentation
 
-In Android Studio: wait for Gradle sync, then **Run** on a connected phone.
+| | |
+|---|---|
+| [BUILD.md](BUILD.md) | Toolchain versions, APK size options, verifying a build, troubleshooting, iOS notes |
+| [AGENTS.md](AGENTS.md) | Runbook for coding agents (and the short version for humans) |
+| [vendor/docs/PROTOCOL.md](vendor/docs/PROTOCOL.md) | The D11s Bluetooth protocol |
+| [DESIGN.md](DESIGN.md) / [PRODUCT.md](PRODUCT.md) | Design system and product brief |
+| [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) | What is bundled, and under which licence |
 
-### CLI alternative (no Studio UI)
+## Status
 
-```bash
-npm run build:web && npx cap sync android
-npx cap run android
-# or build a debug APK:
-cd android && ./gradlew assembleDebug
-# APK: android/app/build/outputs/apk/debug/app-debug.apk
-adb install -r app/build/outputs/apk/debug/app-debug.apk
-```
+A personal project, developed against a D11s and a Samsung Galaxy S24 Ultra. iOS is untested; see
+[BUILD.md § iOS](BUILD.md#ios) for what a port would take. There is no signed release build
+and no Play Store listing.
 
-## Install debug APK on phone
+## Credits and licence
 
-1. USB cable, USB debugging on.
-2. `adb devices` should list the phone.
-3. `adb install -r android/app/build/outputs/apk/debug/app-debug.apk`
-4. Or copy the APK to the phone and open it (allow “Install unknown apps” for Files/Chrome).
+MIT, see [LICENSE](LICENSE). The designer comes from
+[NiimBlue](https://github.com/MultiMote/niimblue) by MultiMote (MIT), via
+[0xMH/fichero-printer](https://github.com/0xMH/fichero-printer), which ported it to the D11s
+and documented the protocol. Bluetooth uses
+[@capgo/capacitor-bluetooth-low-energy](https://github.com/Cap-go/capacitor-bluetooth-low-energy)
+(MPL-2.0, unmodified). The scan feature uses Google ML Kit, which is proprietary; read
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) before redistributing an APK.
 
-Wireless: pair via `adb pair` / Android Studio Device Manager if preferred.
-
-## Using the app
-
-1. Turn on the Fichero / D11s printer (BLE name like `FICHERO_…` or `D11s_…`).
-2. Open **Fichero Labels**.
-3. Grant **Nearby devices / Bluetooth** (and **Location** on Android 11 and older if prompted).
-4. Tap the Bluetooth connect control in the GUI.
-5. Add text on the canvas, print.
-
-### BLE / WebView caveats (honest)
-
-| Approach | BLE? | Capacitor plugins? | Notes |
-|---|---|---|---|
-| **Android System WebView** | No native Web Bluetooth | Yes | Default Capacitor host. `navigator.bluetooth` is missing. |
-| **Chrome Custom Tabs / TWA** | Sometimes (Chrome Web Bluetooth) | **No** bridge | Not used — would lose Cap plugins. |
-| **This MVP: Capgo BLE + `shimWebBluetooth()`** | Yes (native) | Yes | Installs a JS shim so the upstream GUI keeps calling `navigator.bluetooth`. |
-
-**Capgo shim limitation:** `requestDevice()` connects to the **first matching** scanned device (name prefix `FICHERO` / `D11s_`), not a Chrome-style picker. Keep only one printer nearby for MVP.
-
-**Permissions:** Android 12+ uses `BLUETOOTH_SCAN` / `BLUETOOTH_CONNECT`. Older Android still needs location permission for BLE scans (OS rule, not optional).
-
-## Dev loop
-
-```bash
-# After web/src changes:
-npm run build:web && npx cap sync android
-# Then re-run from Android Studio, or:
-npx cap run android
-```
-
-Live reload against a local Vite server is possible later (`capacitor.config.ts` `server.url`); MVP ships built assets in `android/…/assets/public`.
-
-## Credits
-
-Web GUI and protocol: [0xMH/fichero-printer](https://github.com/0xMH/fichero-printer) (MIT). See `THIRD_PARTY_NOTICES.md` and `vendor/`.
-
-## Out of scope (this pass)
-
-- iOS
-- Play Store publishing
-- Native protocol rewrite
-- UX polish / new design system
+Not affiliated with Fichero or AiYin.

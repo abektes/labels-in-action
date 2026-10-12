@@ -11,7 +11,10 @@
 		"build:web": "vite build",
 		"cap:sync": "npm run build:web && npx cap sync android",
 		"cap:open": "npx cap open android",
-		"android": "npm run cap:sync && npx cap run android",
+		"android": "scripts/android.sh run",
+		"android:doctor": "scripts/android.sh doctor",
+		"android:build": "scripts/android.sh build",
+		"android:logs": "scripts/android.sh logs",
 		"test": "vitest run"
 	},
 	"dependencies": {
@@ -58,5 +61,5 @@
 		"vite-plugin-pwa": "^1.3.0",
 		"vitest": "^5.0.1"
 	},
-	"description": "Fichero Labels — Capacitor Android MVP for Fichero D11s"
+	"description": "Labels in Action: design labels on your phone and print them to a Fichero D11s over Bluetooth."
 }

@@ -8,6 +8,17 @@ Paths below assume you are in the repository root. Replace `~/Library/Android/sd
 Android SDK lives elsewhere (that is the macOS default; on Linux it is usually
 `~/Android/Sdk`).
 
+**The short way:** `scripts/android.sh` wraps everything below. It finds the JDK and SDK,
+writes `android/local.properties`, builds, installs, launches and tails logs:
+
+```bash
+npm ci
+scripts/android.sh doctor
+scripts/android.sh run
+```
+
+The rest of this file is what the script does and why, for when something goes wrong.
+
 - [Toolchain](#toolchain)
 - [First-time setup](#first-time-setup)
 - [Build an APK](#build-an-apk)
@@ -54,9 +65,9 @@ sdk.dir=/Users/YOU/Library/Android/sdk
 ```
 
 This file is gitignored and machine-specific, so it is normal for it to be missing on a fresh
-clone — Android Studio writes it for you when you open the project once. Watch out for a copy
-inherited from someone else's machine: this project was originally assembled on a Linux box
-and arrived holding `sdk.dir=/home/box/Android/Sdk`, which fails immediately.
+clone. `scripts/android.sh` writes it for you, and so does Android Studio when you open the
+project once. A copy carried over from another machine points at an SDK path that does not
+exist here and fails immediately; the script replaces one like that too.
 
 ---
 
@@ -90,7 +101,8 @@ Install it on a connected phone:
 ~/Library/Android/sdk/platform-tools/adb install -r android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
-`npm run cap:sync` wraps the first two commands, and `npm run android` also launches the app.
+`npm run cap:sync` wraps the first two commands. `npm run android` (= `scripts/android.sh run`)
+does the whole thing, including install and launch.
 
 ### Clean build
 
@@ -216,8 +228,8 @@ which is an unhelpful failure in the middle of a build check.
 **Gradle fails instantly with no useful output.** `JAVA_HOME` is not set. Export Android
 Studio's JBR as shown above.
 
-**`SDK location not found`.** `android/local.properties` has the wrong `sdk.dir`, usually a
-stale `/home/box/...` path from the original build machine.
+**`SDK location not found`.** `android/local.properties` has the wrong `sdk.dir`, usually
+one copied from another machine. `scripts/android.sh doctor` rewrites it.
 
 **The app installs but Bluetooth does nothing.** Check that
 `assets/capacitor.plugins.json` inside the APK lists
@@ -257,8 +269,6 @@ Our `negotiateMtu()` computes `min(CHUNK_SIZE, mtu - 3)`, which on iOS resolves 
 `maximumWriteValueLength`. CoreBluetooth negotiates MTU itself rather than exposing a request,
 and the plugin papers over that difference for us. The Web Bluetooth shim is also
 platform-agnostic: it gates on `isNativePlatform` and `isPluginAvailable`, both true on iOS.
-
-The toolchain is already here: **Xcode 27.0** and **CocoaPods 1.16.2**.
 
 ### What it would take
 
@@ -386,11 +396,10 @@ If you deploy somewhere other than a domain root, set Vite's `base` and the mani
 
 ### Verify it yourself
 
-**I could not verify service worker registration in this environment.** The generated `sw.js`
-is served correctly (HTTP 200, `text/javascript`, valid Workbox body) and parses cleanly under
-`node --check`, but the embedded browser available here refuses to register any service
-worker — the same restriction that suppresses its native dialogs and blocks the Bluetooth
-chooser. The configuration is sound and the artifacts are correct; actual registration is
+**Service worker registration has not been confirmed in a real browser yet.** The generated
+`sw.js` is served correctly (HTTP 200, `text/javascript`, valid Workbox body) and parses cleanly
+under `node --check`, but the embedded browser it was tested in refuses to register any
+service worker. The configuration and artifacts look right; registration itself is
 unconfirmed.
 
 To check it in real Chrome:
